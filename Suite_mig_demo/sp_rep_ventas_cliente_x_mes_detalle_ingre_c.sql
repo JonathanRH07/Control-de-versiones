@@ -12,12 +12,13 @@ BEGIN
 /*
 	@nombre:		sp_rep_ventas_cliente_x_mes_detalle_ingre_c
 	@fecha:			09/08/2018
-	@descripcion:	Sp para consultar el desgloce de las ventas por cliente por mes (facturas)
+	@descripcion:	Sp para consultar el desgloce de las ventas por cliente por mes (facturas) |INFORME DE VENTAS CLIENTES|
 	@autor: 		Jonathan Ramirez Hernandez
 	@cambios:
 */
 
-    DECLARE lo_sucursal			VARCHAR(100) DEFAULT '';
+	DECLARE lo_sucursal							VARCHAR(100) DEFAULT '';
+	DECLARE lo_moneda_reporte					TEXT;
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -25,17 +26,42 @@ BEGIN
 	END ;
 
 	/* Desarrollo */
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
     DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_total;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_tua;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_iva;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_otros;
     DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_isr;
 
-    IF pr_id_sucursal > 0 THEN
-		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal);
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+	/* VALIDAR MONEDA DEL REPORTE */
+    IF pr_id_moneda = 149 THEN
+		SET lo_moneda_reporte = '/fac.tipo_cambio_usd';
+	ELSEIF pr_id_moneda = 49 THEN
+		SET lo_moneda_reporte = '/fac.tipo_cambio_eur';
+	ELSE
+		SET lo_moneda_reporte = '';
     END IF;
 
-    /*-------------------------------------------------------------------------------*/
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+    /* VALIDAR SUCURSAL EN CASO DE SER CORPORATIVO */
+	SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF pr_id_sucursal > 0 THEN
+		IF @lo_es_matriz = 0 THEN
+			SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+		END IF;
+    END IF;
+
+	/* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
     /* TOTAL */
     SET @query1 = CONCAT('
@@ -48,14 +74,7 @@ BEGIN
 							det.nombre_pasajero nombre_pax,
 							det.concepto,
 							prov.cve_proveedor,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(det.tarifa_moneda_base / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(det.tarifa_moneda_base / fac.tipo_cambio_eur)
-								ELSE
-									det.tarifa_moneda_base
-							END tarifa_facturada,
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) tarifa_facturada,
 							bol.numero_bol boleto,
                             det.importe_markup
 						FROM ic_fac_tr_factura fac
@@ -83,21 +102,12 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    /*-------------------------------------------------------------------------------*/
-
     /* IVA */
     SET @query2 = CONCAT('
 						CREATE TEMPORARY TABLE tmp_detalles_ingreso_iva
 						SELECT
 							det.id_factura_detalle,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_eur)
-								ELSE
-									fac_imp.cantidad
-							END iva
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) iva
 						FROM ic_fac_tr_factura fac
 						LEFT JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
@@ -124,20 +134,11 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    /*-------------------------------------------------------------------------------*/
-
     SET @query3 = CONCAT('
 						CREATE TEMPORARY TABLE tmp_detalles_ingreso_tua
 						SELECT
 							det.id_factura_detalle,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_eur)
-								ELSE
-									fac_imp.cantidad
-							END tua
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) tua
 						FROM ic_fac_tr_factura fac
 						LEFT JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
@@ -164,20 +165,11 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    /*-------------------------------------------------------------------------------*/
-
     SET @query4 = CONCAT('
 						CREATE TEMPORARY TABLE tmp_detalles_ingreso_otros
 						SELECT
 							det.id_factura_detalle,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_eur)
-								ELSE
-									fac_imp.cantidad
-							END otros
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) otros
 						FROM ic_fac_tr_factura fac
 						LEFT JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
@@ -204,20 +196,11 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    /*-------------------------------------------------------------------------------*/
-
         SET @query5 = CONCAT('
 						CREATE TEMPORARY TABLE tmp_detalles_ingreso_isr
 						SELECT
 							det.id_factura_detalle,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_eur)
-								ELSE
-									fac_imp.cantidad
-							END isr
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) isr
 						FROM ic_fac_tr_factura fac
 						LEFT JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
@@ -244,8 +227,6 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    /*-------------------------------------------------------------------------------*/
-
 	SELECT
 		total.id_factura_detalle,
 		total.fecha_factura,
@@ -271,7 +252,7 @@ BEGIN
 	GROUP BY total.id_factura_detalle
     ORDER BY 1 DESC, factura DESC;
 
-    /*-------------------------------------------------------------------------------*/
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
 	/* Mensaje de ejecución */
 	SET pr_message 	   = 'SUCCESS';

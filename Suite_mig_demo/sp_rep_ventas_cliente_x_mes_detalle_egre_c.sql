@@ -1,23 +1,24 @@
 DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_rep_ventas_cliente_x_mes_detalle_egre_c`(
-	IN	pr_id_grupo_empresa		INT,
-    IN	pr_id_moneda			INT,
-    IN	pr_fecha				VARCHAR(7),
-    IN  pr_id_sucursal 			INT,
-    IN	pr_id_cliente			INT,
-	OUT pr_rows_tot_table 		INT,
-	OUT pr_message 	  			VARCHAR(500)
+	IN	pr_id_grupo_empresa						INT,
+    IN	pr_id_moneda							INT,
+    IN	pr_fecha								VARCHAR(7),
+    IN  pr_id_sucursal 							INT,
+    IN	pr_id_cliente							INT,
+	OUT pr_rows_tot_table 						INT,
+	OUT pr_message 	  							VARCHAR(500)
 )
 BEGIN
 /*
 	@nombre:		sp_rep_ventas_cliente_x_mes_detalle_egre_c
 	@fecha:			09/08/2018
-	@descripcion:	Sp para consultar el desgloce de las ventas por cliente por mes (Notas de credito)
+	@descripcion:	Sp para consultar el desgloce de las ventas por cliente por mes (Notas de credito) |INFORME DE VENTAS CLIENTES|
 	@autor: 		Jonathan Ramirez Hernandez
 	@cambios:
 */
 
-    DECLARE lo_sucursal			VARCHAR(100) DEFAULT '';
+    DECLARE lo_sucursal							VARCHAR(100) DEFAULT '';
+	DECLARE lo_moneda_reporte					TEXT;
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -25,17 +26,42 @@ BEGIN
 	END ;
 
 	/* Desarrollo */
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
     DROP TEMPORARY TABLE IF EXISTS tmp_detalles_egreso_total;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_egreso_tua;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_egreso_iva;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_egreso_otros;
     DROP TEMPORARY TABLE IF EXISTS tmp_detalles_egreso_isr;
 
-    IF pr_id_sucursal > 0 THEN
-		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal);
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+	/* VALIDAR MONEDA DEL REPORTE */
+    IF pr_id_moneda = 149 THEN
+		SET lo_moneda_reporte = '/fac.tipo_cambio_usd';
+	ELSEIF pr_id_moneda = 49 THEN
+		SET lo_moneda_reporte = '/fac.tipo_cambio_eur';
+	ELSE
+		SET lo_moneda_reporte = '';
     END IF;
 
-       /*-------------------------------------------------------------------------------*/
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+    /* VALIDAR SUCURSAL EN CASO DE SER CORPORATIVO */
+	SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF pr_id_sucursal > 0 THEN
+		IF @lo_es_matriz = 0 THEN
+			SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+		END IF;
+    END IF;
+
+	/* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
     /* TOTAL */
     SET @query1 = CONCAT('
@@ -48,14 +74,7 @@ BEGIN
 							det.nombre_pasajero nombre_pax,
 							det.concepto,
 							prov.cve_proveedor,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(det.tarifa_moneda_base / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(det.tarifa_moneda_base / fac.tipo_cambio_eur)
-								ELSE
-									det.tarifa_moneda_base
-							END tarifa_facturada,
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) tarifa_facturada,
 							bol.numero_bol boleto,
                             det.importe_markup
 						FROM ic_fac_tr_factura fac
@@ -78,26 +97,17 @@ BEGIN
 						GROUP BY det.id_factura_detalle;'
 						);
 
-	-- SELECT @query1;
+	SELECT @query1;
 	PREPARE stmt FROM @query1;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-
-    /*-------------------------------------------------------------------------------*/
 
     /* IVA */
     SET @query2 = CONCAT('
 						CREATE TEMPORARY TABLE tmp_detalles_egreso_iva
 						SELECT
 							det.id_factura_detalle,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_eur)
-								ELSE
-									fac_imp.cantidad
-							END iva
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) iva
 						FROM ic_fac_tr_factura fac
 						LEFT JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
@@ -124,20 +134,11 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    /*-------------------------------------------------------------------------------*/
-
     SET @query3 = CONCAT('
 						CREATE TEMPORARY TABLE tmp_detalles_egreso_tua
 						SELECT
 							det.id_factura_detalle,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_eur)
-								ELSE
-									fac_imp.cantidad
-							END tua
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) tua
 						FROM ic_fac_tr_factura fac
 						LEFT JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
@@ -164,20 +165,11 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    /*-------------------------------------------------------------------------------*/
-
     SET @query4 = CONCAT('
 						CREATE TEMPORARY TABLE tmp_detalles_egreso_otros
 						SELECT
 							det.id_factura_detalle,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_eur)
-								ELSE
-									fac_imp.cantidad
-							END otros
+							IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) otros
 						FROM ic_fac_tr_factura fac
 						LEFT JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
@@ -204,47 +196,36 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    /*-------------------------------------------------------------------------------*/
-
-        SET @query5 = CONCAT('
-						CREATE TEMPORARY TABLE tmp_detalles_egreso_isr
-						SELECT
-							det.id_factura_detalle,
-							CASE
-								WHEN ',pr_id_moneda,' = 149 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_usd)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									(fac_imp.cantidad / fac.tipo_cambio_eur)
-								ELSE
-									fac_imp.cantidad
-							END isr
-						FROM ic_fac_tr_factura fac
-						LEFT JOIN ic_fac_tr_factura_detalle det ON
-							fac.id_factura = det.id_factura
-						LEFT JOIN ic_fac_tr_factura_detalle_imp fac_imp ON
-							det.id_factura_detalle = fac_imp.id_factura_detalle
-						LEFT JOIN ic_cat_tr_proveedor prov ON
-							det.id_proveedor = prov.id_proveedor
-						LEFT JOIN ic_glob_tr_boleto bol ON
-							det.id_boleto = bol.id_boletos
-						LEFT JOIN ic_cat_tr_serie ser ON
-							fac.id_serie = ser.id_serie
-						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND fac.id_cliente = ',pr_id_cliente,'
-                        ',lo_sucursal,'
-						AND DATE_FORMAT(fac.fecha_factura,''%Y-%m'') = ''',pr_fecha,'''
-						AND fac_imp.id_impuesto = 4
-						AND fac.estatus != ''CANCELADA''
-						AND tipo_cfdi = ''I''
-						GROUP BY det.id_factura_detalle;
-						');
+	SET @query5 = CONCAT('
+					CREATE TEMPORARY TABLE tmp_detalles_egreso_isr
+					SELECT
+						det.id_factura_detalle,
+						IFNULL((det.tarifa_moneda_base',lo_moneda_reporte,'), 0) isr
+					FROM ic_fac_tr_factura fac
+					LEFT JOIN ic_fac_tr_factura_detalle det ON
+						fac.id_factura = det.id_factura
+					LEFT JOIN ic_fac_tr_factura_detalle_imp fac_imp ON
+						det.id_factura_detalle = fac_imp.id_factura_detalle
+					LEFT JOIN ic_cat_tr_proveedor prov ON
+						det.id_proveedor = prov.id_proveedor
+					LEFT JOIN ic_glob_tr_boleto bol ON
+						det.id_boleto = bol.id_boletos
+					LEFT JOIN ic_cat_tr_serie ser ON
+						fac.id_serie = ser.id_serie
+					WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
+					AND fac.id_cliente = ',pr_id_cliente,'
+					',lo_sucursal,'
+					AND DATE_FORMAT(fac.fecha_factura,''%Y-%m'') = ''',pr_fecha,'''
+					AND fac_imp.id_impuesto = 4
+					AND fac.estatus != ''CANCELADA''
+					AND tipo_cfdi = ''I''
+					GROUP BY det.id_factura_detalle;
+					');
 
 	-- SELECT @query5;
 	PREPARE stmt FROM @query5;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
-
-    /*-------------------------------------------------------------------------------*/
 
 	SELECT
 		total.id_factura_detalle,
@@ -270,7 +251,7 @@ BEGIN
 		total.id_factura_detalle = isr.id_factura_detalle
 	ORDER BY 1 DESC, factura DESC;
 
-    /*-------------------------------------------------------------------------------*/
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
 	/* Mensaje de ejecución */
 	SET pr_message 	   = 'SUCCESS';
