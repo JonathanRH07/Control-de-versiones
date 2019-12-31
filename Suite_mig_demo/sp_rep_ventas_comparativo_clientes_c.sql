@@ -1,12 +1,12 @@
 DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_rep_ventas_comparativo_clientes_c`(
-	IN  pr_id_grupo_empresa	INT,
-	IN  pr_id_sucursal 		INT,
-	IN	pr_id_moneda		INT,
-    IN 	pr_id_idioma		INT,
-    IN	pr_fecha			VARCHAR(4),
-	OUT pr_rows_tot_table 	INT,
-	OUT pr_message 	  		VARCHAR(500)
+	IN  pr_id_grupo_empresa						INT,
+	IN  pr_id_sucursal 							INT,
+	IN	pr_id_moneda							INT,
+    IN 	pr_id_idioma							INT,
+    IN	pr_fecha								VARCHAR(4),
+	OUT pr_rows_tot_table 						INT,
+	OUT pr_message 	  							VARCHAR(500)
 )
 BEGIN
 /*
@@ -16,7 +16,8 @@ BEGIN
 	@autor: 		Jonathan Ramirez Hernandez
 	@cambios:
 */
-    DECLARE lo_sucursal		  VARCHAR(100) DEFAULT '';
+    DECLARE lo_sucursal							VARCHAR(100) DEFAULT '';
+    DECLARE lo_moneda_reporte					TEXT;
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -24,13 +25,39 @@ BEGIN
 	END ;
 
     /* Desarrollo */
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
     DROP TEMPORARY TABLE IF EXISTS tmp_comparativo_actual;
     DROP TEMPORARY TABLE IF EXISTS tmp_comparativo_anterior;
 
-    IF pr_id_sucursal > 0 THEN
-		SET lo_sucursal = CONCAT(' AND clie.id_sucursal = ',pr_id_sucursal);
+        /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+    /* VALIDAR MONEDA DEL REPORTE */
+    IF pr_id_moneda = 149 THEN
+        SET lo_moneda_reporte = 'venta_neta_usd';
+	ELSEIF pr_id_moneda = 49 THEN
+        SET lo_moneda_reporte = 'venta_neta_eur';
+	ELSE
+        SET lo_moneda_reporte = 'venta_neta_moneda_base';
     END IF;
+
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+    /* VALIDAR SUCURSAL EN CASO DE SER CORPORATIVO */
+	SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF pr_id_sucursal > 0 THEN
+		IF @lo_es_matriz = 0 THEN
+			SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+		END IF;
+    END IF;
+
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
     /* ACTUAL */
 	SET @query1 = CONCAT('CREATE TEMPORARY TABLE tmp_comparativo_actual
@@ -43,16 +70,7 @@ BEGIN
 											CONCAT(''0'',mes.num_mes)
 									END) anio_actual,
 							mes.mes,
-							CASE
-								WHEN ',pr_id_moneda,' = 100 THEN
-									IFNULL(SUM(a.venta_neta_moneda_base),0)
-								WHEN ',pr_id_moneda,' = 149 THEN
-									IFNULL(SUM(a.venta_neta_usd),0)
-								WHEN ',pr_id_moneda,' = 49 THEN
-									IFNULL(SUM(a.venta_neta_eur),0)
-								ELSE
-									0
-							END monto
+                            IFNULL(SUM(',lo_moneda_reporte,'), 0) monto
 							FROM
 							(SELECT
 								*
@@ -84,16 +102,7 @@ BEGIN
 								END
 								) anio_anterior,
 								mes.mes,
-								CASE
-									WHEN ',pr_id_moneda,' = 100 THEN
-										IFNULL(SUM(b.venta_neta_moneda_base),0)
-									WHEN ',pr_id_moneda,' = 149 THEN
-										IFNULL(SUM(b.venta_neta_usd),0)
-									WHEN ',pr_id_moneda,' = 49 THEN
-										IFNULL(SUM(b.venta_neta_eur),0)
-									ELSE
-										0
-								END monto
+								IFNULL(SUM(',lo_moneda_reporte,'), 0) monto
 							FROM
 							(SELECT
 								*
@@ -121,6 +130,8 @@ BEGIN
 	FROM tmp_comparativo_actual a
 	JOIN tmp_comparativo_anterior b ON
 		a.mes = b.mes;
+
+	/* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
 	/* Mensaje de ejecución */
 	SET pr_message 	   = 'SUCCESS';
