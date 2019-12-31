@@ -1,66 +1,91 @@
 DELIMITER $$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_rep_ventas_detalle_ingreso_c`(
-	IN  pr_id_grupo_empresa		INT,
-	IN	pr_id_sucursal			INT,
-    IN	pr_año					VARCHAR(4),
-    IN	pr_mes					VARCHAR(2),
-    IN	pr_tipo_reporte			INT,
-    IN	pr_consulta				INT,
-    OUT pr_message 	  			VARCHAR(500)
+	IN  pr_id_grupo_empresa					INT,
+	IN	pr_id_sucursal						INT,
+    IN	pr_año								VARCHAR(4),
+    IN	pr_mes								VARCHAR(2),
+    IN	pr_tipo_reporte						INT,
+    IN	pr_consulta							VARCHAR(50),
+    OUT pr_message 	  						VARCHAR(500)
 )
 BEGIN
 /*
 	@nombre:		sp_rep_ventas_detalle_ingreso_c
 	@fecha:			04/12/2018
-	@descripcion:	Sp para consultar el desgloce de las ventas por cliente por mes (Notas de credito)
+	@descripcion:	Sp para consultar el desgloce de las ventas por cliente por mes (FACTURAS) |REPOORTE VENTAS TOTALES|
 	@autor: 		Jonathan Ramirez Hernandez
 	@cambios:
 */
 
-    DECLARE lo_fecha 		VARCHAR(7);
-    DECLARE lo_consulta		VARCHAR(200);
-    DECLARE lo_sucursal		VARCHAR(200) DEFAULT '';
+    DECLARE lo_fecha 						VARCHAR(7);
+    DECLARE lo_consulta						VARCHAR(200) DEFAULT '';
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
-        SET pr_message = 'ERROR store sp_rep_ventas_detalle_egreso';
+        SET pr_message = 'ERROR store sp_rep_ventas_detalle_ingreso_c';
 	END ;
+
+    /* DESARROLLO */
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
     DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_total;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_tua;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_iva;
 	DROP TEMPORARY TABLE IF EXISTS tmp_detalles_ingreso_otros;
 
-    /* DESARROLLO */
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+    /* VALIDAR AÑO */
     IF pr_mes = '' THEN
 		SET lo_fecha = DATE_FORMAT(SYSDATE(),'%Y-%m');
 	ELSE
 		SET lo_fecha = CONCAT(pr_año,'-',pr_mes);
     END IF;
 
-    IF pr_tipo_reporte > 0 AND pr_consulta > 0 THEN
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+    IF pr_tipo_reporte > 0 THEN
 		/* CLIENTE */
-        IF pr_tipo_reporte = 1 THEN
-			SET lo_consulta = CONCAT('AND fac.id_cliente = ',pr_consulta);
-
-        /* VENDEDOR */
-        ELSEIF pr_tipo_reporte = 2 THEN
-			SET lo_consulta = CONCAT('AND fac.id_vendedor_tit = ',pr_consulta);
-
-        /* PROVEEDOR */
-        ELSEIF pr_tipo_reporte = 3 THEN
-			SET lo_consulta = CONCAT('AND det.id_proveedor = ',pr_consulta);
-
-        /* SERVICIO */
-        ELSEIF pr_tipo_reporte = 4 THEN
-			SET lo_consulta = CONCAT('AND det.id_servicio = ',pr_consulta);
-
-        END IF;
+		IF pr_tipo_reporte = 1 THEN
+			IF pr_consulta != 'id_cliente' THEN
+				SET lo_consulta = CONCAT('AND fac.id_cliente = ',pr_consulta);
+			END IF;
+		/* VENDEDOR */
+		ELSEIF pr_tipo_reporte = 2 THEN
+			IF pr_consulta != 'id_vendedor' THEN
+				SET lo_consulta = CONCAT('AND fac.id_vendedor_tit = ',pr_consulta);
+			END IF;
+		/* PROVEEDOR */
+		ELSEIF pr_tipo_reporte = 3 THEN
+			IF pr_consulta != 'id_proveedor' THEN
+				SET lo_consulta = CONCAT('AND det.id_proveedor = ',pr_consulta);
+			END IF;
+		/* SERVICIO */
+		ELSEIF pr_tipo_reporte = 4 THEN
+			IF pr_consulta != 'id_servicio' THEN
+				SET lo_consulta = CONCAT('AND det.id_servicio = ',pr_consulta);
+			END IF;
+		END IF;
     END IF;
+
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+
+    /* VALIDAR SUCURSAL EN CASO DE SER CORPORATIVO */
+	SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
 
     IF pr_id_sucursal > 0 THEN
-		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal);
+		IF @lo_es_matriz = 0 THEN
+			SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+		END IF;
     END IF;
+
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
     /* INGRESO (FACTURAS) */
 	SET @query1 = CONCAT('
@@ -209,6 +234,7 @@ BEGIN
 		total.id_factura_detalle = otros.id_factura_detalle
 	ORDER BY 1 DESC, factura DESC;
 
+	/* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
 	/* Mensaje de ejecución */
 	SET pr_message 	   = 'SUCCESS';
