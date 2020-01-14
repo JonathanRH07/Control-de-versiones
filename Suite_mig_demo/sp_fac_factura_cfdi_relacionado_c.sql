@@ -2,7 +2,6 @@ DELIMITER $$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_fac_factura_cfdi_relacionado_c`(
 	IN	pr_id_grupo_empresa					INT,
     IN	pr_id_cliente						INT,
-    -- IN	pr_tipo_relacion					CHAR(2),
     OUT pr_message							VARCHAR(500)
 )
 BEGIN
@@ -36,7 +35,6 @@ BEGIN
 		fac.id_serie = ser.id_serie
 	WHERE fac.id_grupo_empresa = pr_id_grupo_empresa
 	AND id_cliente = pr_id_cliente
-    -- AND rel.tipo_relacion = pr_tipo_relacion
 	AND estatus = 2
     AND cfdi_timbrado = 'S';
 
