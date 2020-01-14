@@ -16,13 +16,14 @@ BEGIN
 */
 
 	DECLARE lo_moneda_reporte				VARCHAR(255);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         SET pr_message = 'ERROR store sp_dash_bsp_grafica_x_semestre_c';
 	END ;
 
-	/* DESARROLLO */
+	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     /* VALIDAMOS LA MONEDA DEL REPORTE */
     IF pr_moneda_reporte = 149 THEN
 		SET lo_moneda_reporte = '/fac.tipo_cambio_usd';
@@ -32,13 +33,32 @@ BEGIN
 		SET lo_moneda_reporte = '';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
     /* BORRAMOS LAS TABLAS TEMPORALES */
-    DROP TEMPORARY TABLE IF EXISTS tmp_neto_airlines_actual;
-    DROP TEMPORARY TABLE IF EXISTS tmp_neto_airlines_actual_ingreso;
-    DROP TEMPORARY TABLE IF EXISTS tmp_neto_airlines_actual_egreso;
-    DROP TEMPORARY TABLE IF EXISTS tmp_neto_airlines_anterior;
-    DROP TEMPORARY TABLE IF EXISTS tmp_neto_airlines_anterior_ingreso;
-    DROP TEMPORARY TABLE IF EXISTS tmp_neto_airlines_anterior_egreso;
+    DROP TABLE IF EXISTS tmp_neto_airlines_actual;
+    DROP TABLE IF EXISTS tmp_neto_airlines_actual1;
+    DROP TABLE IF EXISTS tmp_neto_airlines_actual2;
+    DROP TABLE IF EXISTS tmp_neto_airlines_actual_ingreso;
+    DROP TABLE IF EXISTS tmp_neto_airlines_actual_egreso;
+    DROP TABLE IF EXISTS tmp_neto_airlines_anterior;
+    DROP TABLE IF EXISTS tmp_neto_airlines_anterior1;
+    DROP TABLE IF EXISTS tmp_neto_airlines_anterior2;
+    DROP TABLE IF EXISTS tmp_neto_airlines_anterior_ingreso;
+    DROP TABLE IF EXISTS tmp_neto_airlines_anterior_egreso;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -55,7 +75,7 @@ BEGIN
 					JOIN ic_gds_tr_vuelos vuelos ON
 						det.id_factura_detalle = vuelos.id_factura_detalle
 					WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND DATE_FORMAT(fecha_factura, ''%Y-%m'') <= DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND DATE_FORMAT(fecha_factura, ''%Y-%m'') > DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 6 MONTH), ''%Y-%m'')
 					AND tipo_cfdi = ''I''
@@ -80,7 +100,7 @@ BEGIN
 					JOIN ic_gds_tr_vuelos vuelos ON
 						det.id_factura_detalle = vuelos.id_factura_detalle
 					WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND DATE_FORMAT(fecha_factura, ''%Y-%m'') <= DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND DATE_FORMAT(fecha_factura, ''%Y-%m'') > DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 6 MONTH), ''%Y-%m'')
 					AND tipo_cfdi = ''E''
@@ -92,9 +112,9 @@ BEGIN
 	PREPARE stmt FROM @queryairac_egr;
 	EXECUTE stmt;
 
-    SET @queryairac = CONCAT(
+    SET @queryairac1 = CONCAT(
 					'
-                    CREATE TEMPORARY TABLE tmp_neto_airlines_actual
+                    CREATE TEMPORARY TABLE tmp_neto_airlines_actual1
 					SELECT
 						DATE_FORMAT(NOW(), ''%Y'') anio_actual,
 						mes.mes,
@@ -111,9 +131,52 @@ BEGIN
 					WHERE mes.id_idioma = ',pr_id_idioma,'
 					GROUP BY mes.num_mes');
 
-	-- SELECT @queryairac;
-	PREPARE stmt FROM @queryairac;
+	-- SELECT @queryairac1;
+	PREPARE stmt FROM @queryairac1;
 	EXECUTE stmt;
+
+	SET @queryairac2 = CONCAT(
+					'
+                    CREATE TEMPORARY TABLE tmp_neto_airlines_actual2
+					SELECT
+						DATE_FORMAT(NOW(), ''%Y'') anio_actual,
+						mes.mes,
+						IFNULL(SUM(venta_neta_moneda_base),0) monto
+					FROM
+					(SELECT
+						ingreso.fecha_factura,
+						(IFNULL(ingreso.monto_moneda_base, 0) - IFNULL(egreso.monto_moneda_base, 0)) venta_neta_moneda_base
+					FROM tmp_neto_airlines_actual_ingreso ingreso
+					RIGHT JOIN tmp_neto_airlines_actual_egreso egreso ON
+						ingreso.fecha_factura = egreso.fecha_factura) a
+					JOIN ct_glob_tc_meses mes ON
+						DATE_FORMAT(fecha_factura, ''%m'') = mes.num_mes
+					WHERE a.fecha_factura IS NULL
+                    AND mes.id_idioma = ',pr_id_idioma,'
+					GROUP BY mes.num_mes');
+
+	-- SELECT @queryairac2;
+	PREPARE stmt FROM @queryairac2;
+	EXECUTE stmt;
+
+    SELECT
+		COUNT(*)
+	INTO
+		@lo_contador1
+    FROM tmp_neto_airlines_actual2;
+
+    IF @lo_contador1 = 0 THEN
+		CREATE TEMPORARY TABLE tmp_neto_airlines_actual
+        SELECT *
+		FROM tmp_neto_airlines_actual1;
+	ELSE
+		CREATE TEMPORARY TABLE tmp_neto_airlines_actual
+        SELECT *
+		FROM tmp_neto_airlines_actual1
+        UNION
+        SELECT *
+		FROM tmp_neto_airlines_actual2;
+    END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -130,7 +193,7 @@ BEGIN
 					JOIN ic_gds_tr_vuelos vuelos ON
 						det.id_factura_detalle = vuelos.id_factura_detalle
 					WHERE id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND fac.fecha_factura > DATE_FORMAT(DATE_SUB(DATE_SUB(NOW(), INTERVAL 1 YEAR), INTERVAL 6 MONTH), ''%Y-%m'')
 					AND fac.fecha_factura <= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 YEAR), ''%Y-%m'')
 					AND tipo_cfdi = ''I''
@@ -154,7 +217,7 @@ BEGIN
 					JOIN ic_gds_tr_vuelos vuelos ON
 						det.id_factura_detalle = vuelos.id_factura_detalle
 					WHERE id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND fac.fecha_factura > DATE_FORMAT(DATE_SUB(DATE_SUB(NOW(), INTERVAL 1 YEAR), INTERVAL 6 MONTH), ''%Y-%m'')
 					AND fac.fecha_factura <= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 1 YEAR), ''%Y-%m'')
 					AND tipo_cfdi = ''E''
@@ -166,9 +229,9 @@ BEGIN
 	PREPARE stmt FROM @queryairant_egr;
 	EXECUTE stmt;
 
-    SET @queryairant = CONCAT(
+    SET @queryairant1 = CONCAT(
 					'
-					CREATE TEMPORARY TABLE tmp_neto_airlines_anterior
+					CREATE TEMPORARY TABLE tmp_neto_airlines_anterior1
 					SELECT
 						DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 YEAR), ''%Y'')  anio_anterior,
 						mes.mes,
@@ -185,9 +248,52 @@ BEGIN
 					WHERE mes.id_idioma = ',pr_id_idioma,'
 					GROUP BY mes.num_mes');
 
-	-- SELECT @queryairant;
-	PREPARE stmt FROM @queryairant;
+	-- SELECT @queryairant1;
+	PREPARE stmt FROM @queryairant1;
 	EXECUTE stmt;
+
+    SET @queryairant2 = CONCAT(
+					'
+					CREATE TEMPORARY TABLE tmp_neto_airlines_anterior2
+					SELECT
+						DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 YEAR), ''%Y'')  anio_anterior,
+						mes.mes,
+						IFNULL(SUM(venta_neta_moneda_base),0) monto
+					FROM
+					(SELECT
+						ingreso.fecha_factura,
+						(IFNULL(ingreso.monto_moneda_base, 0) - IFNULL(egreso.monto_moneda_base, 0)) venta_neta_moneda_base
+					FROM tmp_neto_airlines_anterior_ingreso ingreso
+					RIGHT JOIN tmp_neto_airlines_anterior_egreso egreso ON
+						ingreso.fecha_factura = egreso.fecha_factura) a
+					RIGHT JOIN ct_glob_tc_meses mes ON
+						DATE_FORMAT(fecha_factura, ''%m'') = mes.num_mes
+					WHERE a.fecha_factura IS NULL
+                    AND mes.id_idioma = ',pr_id_idioma,'
+					GROUP BY mes.num_mes');
+
+	-- SELECT @queryairant2;
+	PREPARE stmt FROM @queryairant2;
+	EXECUTE stmt;
+
+	SELECT
+		 SUM(monto)
+	INTO
+		@lo_contador1
+    FROM tmp_neto_airlines_anterior2;
+
+    IF @lo_contador1 = 0 THEN
+		CREATE TEMPORARY TABLE tmp_neto_airlines_anterior
+        SELECT *
+		FROM tmp_neto_airlines_anterior1;
+	ELSE
+		CREATE TEMPORARY TABLE tmp_neto_airlines_anterior
+		SELECT *
+		FROM tmp_neto_airlines_anterior1
+        UNION
+        SELECT *
+		FROM tmp_neto_airlines_anterior2;
+    END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
