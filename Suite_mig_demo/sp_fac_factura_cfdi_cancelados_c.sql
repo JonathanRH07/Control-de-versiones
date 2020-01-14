@@ -1,12 +1,12 @@
 DELIMITER $$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_fac_factura_cfdi_relacionado_c`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_fac_factura_cfdi_cancelados_c`(
 	IN	pr_id_grupo_empresa					INT,
     IN	pr_id_cliente						INT,
     OUT pr_message							VARCHAR(500)
 )
 BEGIN
 /*
-    @nombre:		sp_fac_factura_cfdi_relacionado_c
+    @nombre:		sp_fac_factura_cfdi_cancelados_c
 	@fecha:			2020/01/10
 	@descripcion:	sp para consultar los CFDI's relacionados por factura y cliente
 	@autor:			Jonathan Ramirez
@@ -15,7 +15,7 @@ BEGIN
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
-        SET pr_message = 'ERROR store sp_fac_factura_cfdi_relacionado_c';
+        SET pr_message = 'ERROR store sp_fac_factura_cfdi_cancelados_c';
 	END ;
 
 	SELECT
