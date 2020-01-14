@@ -23,17 +23,21 @@ BEGIN
 
    -- START TRANSACTION;
 
-	INSERT INTO ic_fac_tr_factura_cfdi_relacionados(
+	INSERT INTO ic_fac_tr_factura_cfdi_relacionados
+	(
 		id_factura,
         id_cxc,
         uuid,
 		tipo_relacion
-	) VALUES (
+	)
+    VALUES
+    (
 		pr_id_factura,
         pr_id_cxc,
         pr_uuid,
 		pr_tipo_relacion
 	);
+
 	SET pr_inserted_id 	= @@identity;
 
 	SELECT ROW_COUNT() INTO pr_affect_rows FROM dual;
