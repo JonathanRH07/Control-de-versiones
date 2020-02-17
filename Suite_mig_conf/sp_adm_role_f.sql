@@ -27,10 +27,10 @@ BEGIN
     DECLARE lo_order_by 		VARCHAR(200) DEFAULT '';
     DECLARE lo_descripcion 		VARCHAR(500) DEFAULT '';
 
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    /*DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		SET pr_message = 'ERROR store sp_adm_role_f';
-     END;
+     END;*/
 
 	IF pr_id_role  > 0 THEN
 		SET lo_id_role  = CONCAT(' AND role.id_role  =  ', pr_id_role);
@@ -42,7 +42,7 @@ BEGIN
 
     IF pr_tipo != '' THEN
 		IF pr_tipo = 'F' THEN
-			SET lo_tipo = CONCAT(' role.id_grupo_empresa = 0 ');
+			SET lo_tipo = CONCAT(' role.id_grupo_empresa = 0  ');
 		ELSEIF pr_tipo = 'P' THEN
 			SET lo_tipo = CONCAT(' role.id_grupo_empresa = ', pr_id_grupo_empresa ,' ');
 		END IF;
@@ -55,7 +55,7 @@ BEGIN
         SET lo_tipo = CONCAT(' role.id_grupo_empresa = 0 ');
     END IF;
 
-    IF pr_order_by > '' THEN
+    IF pr_order_by != '' THEN
 		SET lo_order_by = CONCAT(' ORDER BY ', pr_order_by, ' ');
     END IF;
 
@@ -85,22 +85,27 @@ BEGIN
 			AND trans.id_idioma = ?
 			INNER JOIN suite_mig_conf.st_adm_tr_usuario usuario ON
 				usuario.id_usuario=role.id_usuario
-			WHERE ',
+			INNER JOIN suite_mig_conf.st_adm_tr_grupo_empresa gpo ON
+				gpo.id_grupo_empresa = ?
+			INNER JOIN suite_mig_conf.st_adm_tr_empresa emp ON
+				emp.id_empresa = gpo.id_empresa
+			WHERE role.id_tipo_paquete <= emp.id_tipo_paquete AND ',
 				lo_tipo,
 				lo_id_role,
 				lo_nombre_role,
                 lo_descripcion,
-				lo_order_by,
+				' ORDER BY role.id_role ASC',
 			' LIMIT ?,?'
 	);
 
     PREPARE stmt FROM @query;
 
+    SET @id_grupo_empresa = pr_id_grupo_empresa;
     SET @id_idioma = pr_id_idioma;
     SET @ini = pr_ini_pag;
     SET @fin = pr_fin_pag;
 
-	EXECUTE stmt USING @id_idioma, @ini, @fin;
+	EXECUTE stmt USING @id_idioma, @id_grupo_empresa, @ini, @fin;
 
 	DEALLOCATE PREPARE stmt;
 
@@ -118,7 +123,11 @@ BEGIN
 			AND trans.id_idioma = ?
 			INNER JOIN suite_mig_conf.st_adm_tr_usuario usuario ON
 				usuario.id_usuario=role.id_usuario
-			WHERE ',
+			INNER JOIN suite_mig_conf.st_adm_tr_grupo_empresa gpo ON
+				gpo.id_grupo_empresa = ?
+			INNER JOIN suite_mig_conf.st_adm_tr_empresa emp ON
+				emp.id_empresa = gpo.id_empresa
+			WHERE role.id_tipo_paquete <= emp.id_tipo_paquete  AND ',
 				lo_tipo,
 				lo_id_role,
 				lo_nombre_role,
@@ -127,7 +136,7 @@ BEGIN
 
 	PREPARE stmt FROM @queryTotalRows;
 	SET @id_idioma = pr_id_idioma;
-	EXECUTE stmt USING @id_idioma;
+	EXECUTE stmt USING @id_idioma, @id_grupo_empresa;
 	DEALLOCATE PREPARE stmt;
 
 	SET pr_rows_tot_table 	= @pr_rows_tot_table;

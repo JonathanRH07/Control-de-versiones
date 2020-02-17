@@ -1,5 +1,5 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_notificaciones_f`( 
+CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_notificaciones_f`(
 	IN  pr_id_grupo_empresa		INT,
 	IN  pr_id_usuario			INT,
     IN  pr_id_notificacion		INT,

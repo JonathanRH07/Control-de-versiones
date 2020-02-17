@@ -29,6 +29,9 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_config_cdfi_u`(
 	IN  pr_archivo_pfx   			VARCHAR(255),
 	IN  pr_fecha_sello  			TIMESTAMP,
 	IN  pr_folio_sat   				VARCHAR(22),
+    IN  pr_ambiente_timbrado		ENUM('Pruebas', 'Produccion'),
+    IN  pr_usuario_cancelacion  	VARCHAR(255),
+    IN  pr_password_cancelacion  	VARCHAR(255),
 	IN  pr_id_usuario		  		INT,
     OUT pr_affect_rows      		INT,
     OUT pr_message 	         		VARCHAR(500))
@@ -68,12 +71,15 @@ BEGIN
 	DECLARE  lo_archivo_pfx   			VARCHAR(1000) DEFAULT '';
 	DECLARE  lo_fecha_sello  			VARCHAR(1000) DEFAULT '';
 	DECLARE  lo_folio_sat   			VARCHAR(1000) DEFAULT '';
+    DECLARE  lo_ambiente_timbrado   	VARCHAR(1000) DEFAULT '';
+    DECLARE  lo_usuario_cancelacion   	VARCHAR(1000) DEFAULT '';
+    DECLARE  lo_password_cancelacion   	VARCHAR(1000) DEFAULT '';
 
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    /*DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
 		SET pr_message = 'ERROR store sp_adm_config_cdfi_u';
         SET pr_affect_rows = 0;
-	END;
+	END;*/
 
 	IF pr_series_electronica != ''  THEN
 		SET lo_series_electronica  = CONCAT(' series_electronica = "', pr_series_electronica , '",');
@@ -184,6 +190,19 @@ BEGIN
     IF pr_folio_sat != '' THEN
 		SET lo_folio_sat = CONCAT(' folio_sat= "', pr_folio_sat, '",');
 	END IF;
+
+    IF pr_ambiente_timbrado != '' THEN
+		SET lo_ambiente_timbrado = CONCAT(' ambiente_timbrado= "', pr_ambiente_timbrado, '",');
+	END IF;
+
+    IF pr_usuario_cancelacion != '' THEN
+		SET lo_usuario_cancelacion = CONCAT(' usuario_cancelacion= "', pr_usuario_cancelacion, '",');
+	END IF;
+
+    IF pr_password_cancelacion != '' THEN
+		SET lo_password_cancelacion = CONCAT(' password_cancelacion= "', pr_password_cancelacion, '",');
+	END IF;
+
     /*
     IF pr_certificado_2048  !=''  THEN
 		SET lo_certificado_2048 = CONCAT(' certificado_2048= "', pr_certificado_2048, '",');
@@ -218,6 +237,9 @@ BEGIN
                             lo_archivo_pfx,
                             lo_fecha_sello,
                             lo_folio_sat,
+                            lo_ambiente_timbrado,
+                            lo_usuario_cancelacion,
+                            lo_password_cancelacion,
 							' id_usuario=',pr_id_usuario,
 							' ,fecha_mod  = sysdate()
                             WHERE id_config_cfdi = ? AND id_grupo_empresa = ',pr_id_grupo_empresa);

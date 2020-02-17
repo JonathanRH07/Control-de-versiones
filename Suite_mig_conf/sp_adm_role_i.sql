@@ -47,17 +47,33 @@ BEGIN
 		SET pr_affect_rows = 0;
 		ROLLBACK;
 	ELSE
+		SET @queryTipoPaquete = CONCAT('SELECT
+			emp.id_tipo_paquete
+		INTO
+			@tipo_paquete
+		FROM suite_mig_conf.st_adm_tr_grupo_empresa  gpo
+		JOIN suite_mig_conf.st_adm_tr_empresa emp ON
+        gpo.id_empresa = emp.id_empresa WHERE
+        gpo.id_grupo_empresa = ? ');
+
+		PREPARE stmt FROM @queryTipoPaquete;
+
+		SET @id_grupo_empresa = pr_id_grupo_empresa;
+		EXECUTE stmt USING @id_grupo_empresa;
+		DEALLOCATE PREPARE stmt;
 
 		INSERT INTO st_adm_tc_role (
 			id_grupo_empresa,
 			nombre_role,
-			id_usuario
+			id_usuario,
+            id_tipo_paquete
 			)
 		VALUES
 			(
 			pr_id_grupo_empresa,
 			pr_nombre_role,
-			pr_id_usuario
+			pr_id_usuario,
+            4#@tipo_paquete
 			);
 
 		SET lo_inserted_id 	= @@identity;

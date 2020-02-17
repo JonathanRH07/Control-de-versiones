@@ -37,8 +37,12 @@ BEGIN
 		FROM suite_mig_conf.st_adm_tc_role role
         left join suite_mig_conf.st_adm_tc_role_trans trans
 			on trans.id_role=role.id_role AND trans.id_idioma = pr_id_idioma
-		WHERE   IFNULL(trans.nombre_role, role.nombre_role)  LIKE CONCAT('%',pr_consulta,'%')
-        AND (role.id_grupo_empresa = pr_id_grupo_empresa OR role.id_grupo_empresa = 0);
+		INNER JOIN suite_mig_conf.st_adm_tr_grupo_empresa gpo ON
+			gpo.id_grupo_empresa = pr_id_grupo_empresa
+		INNER JOIN suite_mig_conf.st_adm_tr_empresa emp ON
+			emp.id_empresa = gpo.id_empresa
+		WHERE  IFNULL(trans.nombre_role, role.nombre_role)  LIKE CONCAT('%',pr_consulta,'%')
+        AND (role.id_grupo_empresa = pr_id_grupo_empresa OR role.id_grupo_empresa = 0) AND role.id_tipo_paquete <= emp.id_tipo_paquete;
 	ELSE
 		SELECT
 			 role.id_role,
@@ -46,8 +50,12 @@ BEGIN
 		FROM suite_mig_conf.st_adm_tc_role role
         left join suite_mig_conf.st_adm_tc_role_trans trans
 			on trans.id_role=role.id_role AND trans.id_idioma = pr_id_idioma
+		INNER JOIN suite_mig_conf.st_adm_tr_grupo_empresa gpo ON
+			gpo.id_grupo_empresa = pr_id_grupo_empresa
+		INNER JOIN suite_mig_conf.st_adm_tr_empresa emp ON
+			emp.id_empresa = gpo.id_empresa
 		WHERE role.nombre_role LIKE CONCAT('%',pr_consulta,'%')
-        AND role.id_grupo_empresa = pr_id_grupo_empresa  OR role.id_grupo_empresa = 0
+        AND (role.id_grupo_empresa = pr_id_grupo_empresa  OR role.id_grupo_empresa = 0) AND role.id_tipo_paquete <= emp.id_tipo_paquete
 		LIMIT 50;
 	END IF;
 

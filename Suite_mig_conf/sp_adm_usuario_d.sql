@@ -28,18 +28,28 @@ BEGIN
     AND id_grupo_empresa = pr_id_grupo_empresa;
 	*/
 
-    UPDATE suite_mig_conf.st_adm_tr_usuario
-	SET estatus_usuario = 3
-	WHERE id_usuario = pr_id_usuario
-    AND id_grupo_empresa = pr_id_grupo_empresa;
+    SELECT inicio_sesion into @inicio_sesion FROM
+			suite_mig_conf.st_adm_tr_usuario
+            where id_usuario = pr_id_usuario;
 
-	IF code = '00000' THEN
-		GET DIAGNOSTICS rows = ROW_COUNT;
-		SET pr_message 	   = 'SUCCESS';
-		SELECT ROW_COUNT() INTO pr_affect_rows FROM dual;
+	IF @inicio_sesion = 1 THEN
+		SET pr_message = 'USERS.MESSAGE_ERROR_LOGGUED_USERS';
+        SET pr_affect_rows = 0;
 	ELSE
-        SET pr_message = CONCAT('FAILED, ERROR = ',code,', message = ',msg);
-        SELECT ROW_COUNT() INTO pr_affect_rows FROM dual;
+
+		UPDATE suite_mig_conf.st_adm_tr_usuario
+		SET estatus_usuario = 3
+		WHERE id_usuario = pr_id_usuario
+		AND id_grupo_empresa = pr_id_grupo_empresa;
+
+		IF code = '00000' THEN
+			GET DIAGNOSTICS rows = ROW_COUNT;
+			SET pr_message 	   = 'SUCCESS';
+			SELECT ROW_COUNT() INTO pr_affect_rows FROM dual;
+		ELSE
+			SET pr_message = CONCAT('FAILED, ERROR = ',code,', message = ',msg);
+			SELECT ROW_COUNT() INTO pr_affect_rows FROM dual;
+		END IF;
 	END IF;
 END$$
 DELIMITER ;

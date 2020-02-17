@@ -48,7 +48,7 @@ BEGIN
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 
 	BEGIN
-		SET pr_message = 'ERROR store sp_cat_usuario_u';
+		SET pr_message = 'USERS.MESSAGE_ERROR_UPDATE_USUARIOS';
         SET pr_affect_rows = 0;
 		ROLLBACK;
 	END;
@@ -121,7 +121,16 @@ BEGIN
 		SET  lo_id_usuario_mod = CONCAT(' id_usuario_mod  = "', pr_id_usuario_mod, '",');
 	END IF;
 
-	SET @query = CONCAT('UPDATE suite_mig_conf.st_adm_tr_usuario
+    SELECT inicio_sesion into @inicio_sesion FROM
+			suite_mig_conf.st_adm_tr_usuario
+            where id_usuario = pr_id_usuario;
+
+	IF @inicio_sesion = 1 THEN
+		SET pr_message = 'USERS.MESSAGE_ERROR_LOGGUED_USERS';
+        SET pr_affect_rows = 0;
+	ELSE
+
+		SET @query = CONCAT('UPDATE suite_mig_conf.st_adm_tr_usuario
 							SET ',
 								lo_id_role,
 								lo_usuario,
@@ -157,5 +166,6 @@ BEGIN
 		SET pr_message = 'SUCCESS';
 
 		COMMIT;
+	END IF;
 END$$
 DELIMITER ;

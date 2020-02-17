@@ -30,6 +30,7 @@ BEGIN
 		SELECT
 			 id_usuario,
              usuario,
+             correo,
              CONCAT(nombre_usuario, ' ',paterno_usuario) AS nombre_completo
 		FROM suite_mig_conf.st_adm_tr_usuario
 		WHERE (  CONCAT(nombre_usuario, ' ',paterno_usuario) LIKE CONCAT('%',pr_consulta,'%') OR usuario   LIKE CONCAT('%',pr_consulta,'%') )

@@ -26,7 +26,7 @@ BEGIN
 		FROM st_adm_tr_config_cfdi cfdi
         LEFT JOIN st_adm_tr_usuario usr ON
 			usr.id_grupo_empresa = cfdi.id_grupo_empresa AND usr.id_role = 1
-		WHERE DATEDIFF(cfdi.vigencia_hasta, NOW()) < 32 AND
+		WHERE DATEDIFF(cfdi.vigencia_hasta, NOW()) < 33 AND
 		(cfdi.email_vigencia_proxima = 'N' AND cfdi.email_vigencia_caduca = 'N');
 	ELSE
 		SELECT

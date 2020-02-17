@@ -24,7 +24,6 @@ BEGIN
 	BEGIN
 		SET pr_message = 'ERROR store sp_adm_usuario_acceso_i';
         SET pr_affect_rows = 0;
-        ROLLBACK;
 	END;
 
 	SELECT
@@ -41,7 +40,6 @@ BEGIN
 	FROM st_adm_tr_grupo_empresa
 	WHERE id_grupo_empresa = lo_id_grupo_empresa;
 
-	START TRANSACTION;
 
     INSERT INTO st_adm_tr_usuario_acceso
 	(
@@ -65,7 +63,7 @@ BEGIN
 
 	# Mensaje de ejecución.
 	SET pr_message = 'SUCCESS';
-    COMMIT;
+
 
 END$$
 DELIMITER ;

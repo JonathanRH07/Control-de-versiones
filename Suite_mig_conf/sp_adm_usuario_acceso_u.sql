@@ -27,10 +27,8 @@ BEGIN
 	BEGIN
 		SET pr_message = 'ERROR store sp_cat_usuario_u';
         SET pr_affect_rows = 0;
-		ROLLBACK;
 	END;
 
-    START TRANSACTION;
 
     IF pr_acceso_por != '' THEN
 		SET lo_acceso_por = CONCAT(' acceso_por = ''', pr_acceso_por, ''',');
@@ -69,7 +67,7 @@ BEGIN
 
 	# Mensaje de ejecucion.
 	SET pr_message = 'SUCCESS';
-	COMMIT;
+
 
 END$$
 DELIMITER ;

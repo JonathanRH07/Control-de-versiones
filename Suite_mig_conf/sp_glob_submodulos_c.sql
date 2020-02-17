@@ -1,5 +1,6 @@
 DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_glob_submodulos_c`(
+	IN  pr_id_empresa 	INT,
 	OUT pr_message 		VARCHAR(500))
 BEGIN
 /*
@@ -21,8 +22,12 @@ BEGIN
         submod.clave_submodulo,
         submod.traduccion
 	FROM st_adm_tr_submodulo submod
+    INNER JOIN st_adm_tr_empresa emp
+		ON emp.id_empresa = pr_id_empresa
 	INNER JOIN st_adm_tc_modulo modu
-		ON modu.id_modulo = submod.id_modulo ;
+		ON modu.id_modulo = submod.id_modulo
+	WHERE modu.id_tipo_paquete <= emp.id_tipo_paquete;
+
 
 	 # Mensaje de ejecución.
 	SET pr_message 	   = 'SUCCESS';

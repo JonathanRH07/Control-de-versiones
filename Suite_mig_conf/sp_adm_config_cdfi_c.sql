@@ -17,11 +17,16 @@ BEGIN
 	SELECT
 		cfdi.*,
         cfdi.fecha_mod fecha_mod,
+        pac.cve_pac,
+        pac.nombre nombre_pac,
+        pac.rfc_pac,
 		concat(usuario.nombre_usuario," ",
 		usuario.paterno_usuario) usuario_mod
 	FROM st_adm_tr_config_cfdi cfdi
     INNER JOIN suite_mig_conf.st_adm_tr_usuario usuario ON
 		usuario.id_usuario = cfdi.id_usuario
+	LEFT JOIN suite_mig_conf.st_adm_tc_pac pac ON
+		pac.id_pac = cfdi.id_pac
     WHERE cfdi.id_grupo_empresa = pr_id_grupo_empresa;
 
 	 # Mensaje de ejecución.

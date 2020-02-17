@@ -6,6 +6,9 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_usuario_f`(
     IN  pr_nombre_role			VARCHAR(50),
 	IN  pr_correo			    VARCHAR(50),
     IN  pr_nombre_empresa		VARCHAR(50),
+    IN  pr_acceso_ip			CHAR(1),
+    IN  pr_hora_acceso_ini		VARCHAR(12),
+    IN  pr_hora_acceso_fin		VARCHAR(12),
     IN  pr_estatus_usuario  	ENUM('ACTIVO', 'INACTIVO', 'TODOS'),
     IN  pr_consulta_gral		VARCHAR(200),
     IN  pr_ini_pag 				INT,
@@ -31,12 +34,15 @@ BEGIN
     DECLARE lo_nombre_empresa       VARCHAR(100) DEFAULT '';
     DECLARE lo_estatus_usuario  	VARCHAR(1000) DEFAULT '';
     DECLARE lo_order_by 			VARCHAR(200) DEFAULT '';
+	DECLARE lo_acceso_ip 			VARCHAR(200) DEFAULT '';
+    DECLARE lo_hora_acceso_ini 		VARCHAR(200) DEFAULT '';
+    DECLARE lo_hora_acceso_fin 		VARCHAR(200) DEFAULT '';
     DECLARE lo_consulta_gral  		VARCHAR(2000) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
-	/*BEGIN
+	BEGIN
 		SET pr_message = 'ERROR store sp_adm_usuario_f';
-     END;*/
+     END;
 
 	IF pr_usuario  != '' THEN
 		SET lo_usuario  = CONCAT(' AND usuario.nombre_usuario  LIKE "%',pr_usuario,'%" OR usuario.paterno_usuario LIKE "%',pr_usuario,'%" OR usuario.materno_usuario LIKE "%',pr_usuario,'%"' );
@@ -54,6 +60,18 @@ BEGIN
 		SET lo_nombre_empresa = CONCAT(' AND empresa.nom_empresa LIKE "%', pr_nombre_empresa, '%" ');
 	END IF;
 
+    IF pr_acceso_ip != '' THEN
+		SET lo_acceso_ip = CONCAT(' AND usuario.acceso_ip = ', pr_acceso_ip, ' ');
+	END IF;
+
+    IF pr_hora_acceso_ini != '' THEN
+		SET lo_hora_acceso_ini = CONCAT(' AND usuario.hora_acceso_ini >= "', pr_hora_acceso_ini, '" ');
+	END IF;
+
+    IF pr_hora_acceso_fin != '' THEN
+		SET lo_hora_acceso_fin = CONCAT(' AND usuario.hora_acceso_fin <= "', pr_hora_acceso_fin, '" ');
+	END IF;
+
     IF (pr_estatus_usuario != '' AND pr_estatus_usuario != 'TODOS' )  THEN
 		SET lo_estatus_usuario = CONCAT(' AND usuario.estatus_usuario = "', pr_estatus_usuario,'"');
 	END IF;
@@ -68,8 +86,9 @@ BEGIN
                                             OR usuario.materno_usuario LIKE "%'		, pr_consulta_gral, '%"
 											OR role.nombre_role LIKE "%'			, pr_consulta_gral, '%"
                                             OR empresa.nom_empresa LIKE "%'			, pr_consulta_gral, '%"
-                                            OR usuario.correo LIKE "%'				, pr_consulta_gral, '%"
-                                            OR usuario.estatus_usuario LIKE "%'		, pr_consulta_gral, '%" ) ');
+                                            OR usuario.hora_acceso_ini LIKE "%'		, pr_consulta_gral, '%"
+											OR usuario.hora_acceso_fin LIKE "%'		, pr_consulta_gral, '%"
+                                            OR usuario.correo LIKE "%'				, pr_consulta_gral, '%" ) ');
 	END IF;
 
    SET @query = CONCAT('
@@ -111,12 +130,15 @@ BEGIN
 				suite_mig_conf.st_adm_tr_usuario as user
 			WHERE usuario.id_usuario_mod = user.id_usuario
 			AND usuario.id_grupo_empresa= ?
-            AND  usuario.estatus_usuario != 3',
+            AND  usuario.estatus_usuario < 3',
 				lo_usuario,
 				lo_nombre_role,
                 lo_correo,
                 lo_nombre_empresa,
                 lo_estatus_usuario,
+                lo_hora_acceso_ini,
+                lo_hora_acceso_fin,
+                lo_acceso_ip,
                 lo_consulta_gral,
                 ' GROUP BY usuario.id_usuario ',
 				lo_order_by,
@@ -151,12 +173,16 @@ BEGIN
 			INNER JOIN
 				suite_mig_conf.st_adm_tr_usuario as user
 			WHERE usuario.id_usuario_mod = user.id_usuario
-			AND usuario.id_grupo_empresa= ?',
+			AND usuario.id_grupo_empresa= ?
+            AND  usuario.estatus_usuario != 3 ',
 				lo_usuario,
 				lo_nombre_role,
                 lo_correo,
                 lo_nombre_empresa,
                 lo_estatus_usuario,
+                lo_hora_acceso_ini,
+                lo_hora_acceso_fin,
+                lo_acceso_ip,
                 lo_consulta_gral
 	);
 -- select @queryTotalRows;

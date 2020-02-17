@@ -16,10 +16,10 @@ BEGIN
     DECLARE lo_id_empresa 		INT;
     -- DECLARE lo_count_base INT;
 
-	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	/*DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		SET pr_message = 'ERROR store sp_adm_config_admin_b';
-	END ;
+	END ;*/
 
 	SELECT
 		DISTINCT(dba.nombre)
@@ -56,6 +56,7 @@ BEGIN
 				em.usuarios,
 				em.sucursales,
 				em.outsoursing,
+                em.id_tipo_paquete,
 				dir.calle_direccion,
 				pa.id_pais,
                 pa.pais,
@@ -119,6 +120,7 @@ BEGIN
 				cnf.Incluir_fecha_viaje,
 				cnf.calculo_markup,
 				cnf.logo_empresa,
+                cnf.forma_pago_folios,
 				cnf.fecha_mod fecha_mod,
 				concat(usuario.nombre_usuario," ",
 				usuario.paterno_usuario) usuario_mod

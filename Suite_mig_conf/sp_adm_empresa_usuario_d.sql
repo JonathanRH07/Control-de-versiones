@@ -23,10 +23,15 @@ BEGIN
 		GET DIAGNOSTICS CONDITION 1
 		code = RETURNED_SQLSTATE, msg = MESSAGE_TEXT;
 	END;
-
+        /*
         DELETE FROM st_adm_tr_empresa_usuario
 		WHERE id_empresa = pr_id_empresa
 		AND id_usuario = pr_id_usuario;
+        */
+
+	UPDATE suite_mig_conf.st_adm_tr_usuario
+    SET estatus_usuario='3'
+    WHERE id_usuario= pr_id_usuario;
 
 	IF code = '00000' THEN
 	GET DIAGNOSTICS rows = ROW_COUNT;
