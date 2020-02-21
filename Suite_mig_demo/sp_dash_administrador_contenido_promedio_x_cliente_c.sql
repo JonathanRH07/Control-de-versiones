@@ -18,6 +18,7 @@ BEGIN
 */
 
 	DECLARE lo_moneda_reporte				VARCHAR(100);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -35,60 +36,150 @@ BEGIN
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-    SET @query_promedio_x_cliente = CONCAT(
-									'
-									SELECT
-										cli.razon_social cliente,
-										SUM((det.tarifa_moneda_base',lo_moneda_reporte,') + (importe_markup',lo_moneda_reporte,') - (descuento',lo_moneda_reporte,')) total,
-										COUNT(det.id_factura_detalle) no_servicios,
-										(SUM((det.tarifa_moneda_base',lo_moneda_reporte,') + (importe_markup',lo_moneda_reporte,') - (descuento',lo_moneda_reporte,'))/COUNT(det.id_factura_detalle)) promedio
-									FROM ic_fac_tr_factura fac
-									JOIN ic_fac_tr_factura_detalle det ON
-										fac.id_factura = det.id_factura
-									JOIN ic_cat_tr_cliente cli ON
-										fac.id_cliente = cli.id_cliente
-									WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-									AND fac.id_sucursal = ',pr_id_sucursal,'
-									AND fac.estatus != 2
-									AND DATE_FORMAT(fac.fecha_factura,''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
-									GROUP BY cli.id_cliente
-									ORDER BY 2 DESC
-                                    LIMIT ',pr_ini_pag,',',pr_fin_pag);
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
 
-	-- SELECT @query_promedio_x_cliente;
-	PREPARE stmt FROM @query_promedio_x_cliente;
-	EXECUTE stmt;
-    DEALLOCATE PREPARE stmt;
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-	SET @pr_rows_tot_table = 0;
-    SET @query_promedio_cli_count = CONCAT(
+    DROP TABLE IF EXISTS tmp_compras_ing;
+    DROP TABLE IF EXISTS tmp_compras_egr;
+    DROP TABLE IF EXISTS tmp_compras1;
+    DROP TABLE IF EXISTS tmp_compras2;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SET @query_promedio_x_cliente_ing = CONCAT(
 									'
+                                    CREATE TEMPORARY TABLE tmp_compras_ing
 									SELECT
-										COUNT(*)
-									INTO
-										@pr_rows_tot_table
-									FROM(
-									SELECT
-										COUNT(*)
+										fac.id_cliente,
+										cli.razon_social cliente,
+										SUM((det.tarifa_moneda_base',lo_moneda_reporte,') + (importe_markup',lo_moneda_reporte,') - (descuento',lo_moneda_reporte,')) total,
+										COUNT(det.id_factura_detalle) no_servicios
 									FROM ic_fac_tr_factura fac
 									JOIN ic_fac_tr_factura_detalle det ON
 										fac.id_factura = det.id_factura
 									JOIN ic_cat_tr_cliente cli ON
 										fac.id_cliente = cli.id_cliente
 									WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-									AND fac.id_sucursal = ',pr_id_sucursal,'
+									',lo_sucursal,'
 									AND fac.estatus != 2
 									AND DATE_FORMAT(fac.fecha_factura,''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
-									GROUP BY cli.id_cliente) a');
+                                    AND tipo_cfdi = ''I''
+									GROUP BY cli.id_cliente
+									ORDER BY 2 DESC');
 
-	-- SELECT @query_promedio_cli_count;
-	PREPARE stmt FROM @query_promedio_cli_count;
+	-- SELECT @query_promedio_x_cliente_ing;
+	PREPARE stmt FROM @query_promedio_x_cliente_ing;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
-    SET pr_rows_tot_table = @pr_rows_tot_table;
+    SET @query_promedio_x_cliente_egr = CONCAT(
+									'
+                                    CREATE TEMPORARY TABLE tmp_compras_egr
+									SELECT
+										fac.id_cliente,
+										cli.razon_social cliente,
+										SUM((det.tarifa_moneda_base',lo_moneda_reporte,') + (importe_markup',lo_moneda_reporte,') - (descuento',lo_moneda_reporte,')) total,
+										COUNT(det.id_factura_detalle) no_servicios
+									FROM ic_fac_tr_factura fac
+									JOIN ic_fac_tr_factura_detalle det ON
+										fac.id_factura = det.id_factura
+									JOIN ic_cat_tr_cliente cli ON
+										fac.id_cliente = cli.id_cliente
+									WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
+									',lo_sucursal,'
+									AND fac.estatus != 2
+									AND DATE_FORMAT(fac.fecha_factura,''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
+                                    AND tipo_cfdi = ''E''
+									GROUP BY cli.id_cliente
+									ORDER BY 2 DESC');
+
+	-- SELECT @query_promedio_x_cliente_egr;
+	PREPARE stmt FROM @query_promedio_x_cliente_egr;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+
+    CREATE TEMPORARY TABLE tmp_compras1
+    SELECT
+		ingreso.id_cliente,
+		ingreso.cliente,
+		IFNULL((IFNULL(ingreso.total, 0) - IFNULL(egreso.total, 0)), 0) total,
+		IFNULL((IFNULL(ingreso.no_servicios, 0) - IFNULL(egreso.no_servicios, 0)), 0) no_servicios
+	FROM tmp_compras_ing ingreso
+	LEFT JOIN tmp_compras_egr egreso ON
+		ingreso.id_cliente = egreso.id_cliente;
+
+    CREATE TEMPORARY TABLE tmp_compras2
+	SELECT
+		IFNULL(ingreso.id_cliente, egreso.id_cliente) id_cliente,
+		IFNULL(ingreso.cliente, egreso.cliente) cliente,
+		IFNULL((IFNULL(ingreso.total, 0) - IFNULL(egreso.total, 0)), 0) total,
+		IFNULL((IFNULL(ingreso.no_servicios, 0) - IFNULL(egreso.no_servicios, 0)), 0) no_servicios
+	FROM tmp_compras_ing ingreso
+	RIGHT JOIN tmp_compras_egr egreso ON
+		ingreso.id_cliente = egreso.id_cliente
+	WHERE ingreso.id_cliente IS NULL;
+
+
+    SELECT
+		COUNT(*)
+	INTO
+		@lo_cont
+	FROM tmp_compras2;
+
+    IF @lo_cont = 0 THEN
+		SELECT
+			cliente,
+			IFNULL(total, 0) total,
+			IFNULL(no_servicios, 0) no_servicios,
+			IFNULL((IFNULL(total, 0)/IFNULL(no_servicios, 0)), 0) promedio
+		FROM tmp_compras1
+        LIMIT pr_ini_pag, pr_fin_pag;
+	ELSE
+		SELECT
+			cliente,
+			IFNULL(total, 0) total,
+			IFNULL(no_servicios, 0) no_servicios,
+			IFNULL((IFNULL(total, 0)/IFNULL(no_servicios, 0)), 0) promedio
+		FROM (
+			SELECT *
+			FROM tmp_compras1
+			UNION
+			SELECT *
+			FROM tmp_compras2) a
+		LIMIT pr_ini_pag, pr_fin_pag;
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+	IF @lo_cont = 0 THEN
+		SELECT
+			COUNT(*)
+		INTO
+			pr_rows_tot_table
+		FROM tmp_compras1;
+	ELSE
+		SELECT
+			COUNT(*)
+		INTO
+			pr_rows_tot_table
+		FROM (
+			SELECT *
+			FROM tmp_compras1
+			UNION
+			SELECT *
+			FROM tmp_compras2) a;
+    END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

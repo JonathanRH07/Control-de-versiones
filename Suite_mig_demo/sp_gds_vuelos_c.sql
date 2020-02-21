@@ -22,9 +22,12 @@ BEGIN
 		gds_vuelos.*
         , glob_bol.numero_bol AS numero_boleto
         , pr_contador AS contador
+        ,air.nombre_aerolinea
 	FROM ic_gds_tr_vuelos AS gds_vuelos
 	LEFT JOIN ic_glob_tr_boleto AS glob_bol
 		ON glob_bol.id_boletos = gds_vuelos.id_boleto
+	LEFT JOIN ct_glob_tc_aerolinea AS air
+		ON air.clave_aerolinea = gds_vuelos.clave_linea_aerea
 	WHERE
 		gds_vuelos.id_factura_detalle = pr_id_factura_detalle
 	;

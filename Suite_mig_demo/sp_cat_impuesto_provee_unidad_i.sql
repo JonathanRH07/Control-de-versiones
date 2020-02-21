@@ -10,7 +10,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_cat_impuesto_provee_unidad_i`(
 )
 BEGIN
 /*
-	@nombre:		sp_cat_impuesto_provee_unidad_i	
+	@nombre:		sp_cat_impuesto_provee_unidad_i
 	@fecha:			07/01/2019
 	@descripcion:	SP para insertar registro de catalogo ic_cat_tr_impuesto_provee_unidad.
 	@autor:			Jonathan Ramirez

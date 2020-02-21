@@ -1,3 +1,4 @@
+DELIMITER $$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_fac_factura_cfdi_relacionados_u`(
 	IN	pr_id_factura				INT,
     IN	pr_tipo_relacion			CHAR(2),
@@ -31,4 +32,5 @@ BEGIN
 	# Mensaje de ejecución.
 	SET pr_message = 'SUCCESS';
 
-END
+END$$
+DELIMITER ;

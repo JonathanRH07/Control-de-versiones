@@ -18,6 +18,7 @@ BEGIN
     DECLARE lo_moneda_reporte 	TEXT;
     DECLARE lo_fecha_ini 		DATE;
     DECLARE lo_fecha_fin 		DATE;
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -32,6 +33,19 @@ BEGIN
 		SET lo_moneda_reporte = '(det.importe_eur * -1)';
 	ELSE
 		SET lo_moneda_reporte = '(det.importe_moneda_base * -1)';
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
     /*Rango de fechas*/
@@ -65,7 +79,7 @@ BEGIN
 						JOIN ic_glob_tr_cxc_detalle det ON
 							cxc.id_cxc = det.id_cxc
 						WHERE cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND cxc.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND det.estatus = ''ACTIVO''
 						AND det.id_factura IS NULL
 						AND cxc.estatus = ''ACTIVO''
@@ -97,7 +111,7 @@ BEGIN
 						JOIN ic_glob_tr_cxc_detalle det ON
 							cxc.id_cxc = det.id_cxc
 						WHERE cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND cxc.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND det.estatus = ''ACTIVO''
 						AND det.id_factura IS NULL
 						AND cxc.estatus = ''ACTIVO''

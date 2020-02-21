@@ -1,3 +1,4 @@
+DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `ic_gds_autos_i`(
 	IN  pr_id_detalle_factura 	INT(11),
 	IN  pr_numero_boleto 		VARCHAR(15),
@@ -86,4 +87,5 @@ BEGIN
 
 	COMMIT;
 
-END
+END$$
+DELIMITER ;

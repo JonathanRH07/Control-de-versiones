@@ -9,7 +9,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_cliente_adicional_i`(
 	OUT pr_message		    	VARCHAR(500))
 BEGIN
 /*
-	@nombre:		sp_cat_cliente_adicional_i		
+	@nombre:		sp_cat_cliente_adicional_i
 	@fecha:			25/01/2017
 	@descripcion:	SP para agregar registros en Cliente_adicional
 	@autor:			Griselda Medina Medina

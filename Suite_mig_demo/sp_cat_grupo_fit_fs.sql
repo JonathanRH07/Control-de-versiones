@@ -1,12 +1,14 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_grupo_fit_f`(
+CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_grupo_fit_fs`(
 	IN 	pr_id_grupo_empresa		INT,
     IN 	pr_id_grupo_fit			INT,
     IN  pr_cve_codigo_grupo 	VARCHAR(45),
     IN  pr_desc_grupo_fit		TEXT,
     IN  pr_fecha_ini_grupo_fit	DATE,
     IN  pr_fecha_fin_grupo_fit	DATE,
+    IN  pr_fecha_grupo_fit		DATE,
     IN  pr_estatus_grupo_fit   	ENUM('ACTIVO','INACTIVO','TODOS'),
+    IN  pr_tipo_busqueda		CHAR(1),
     IN  pr_consulta_gral		VARCHAR(200),
     IN  pr_ini_pag 				INT,
     IN  pr_fin_pag 				INT,
@@ -30,10 +32,10 @@ BEGIN
     DECLARE lo_order_by 			VARCHAR(300) DEFAULT '';
     DECLARE lo_consulta_gral  		VARCHAR(2000) DEFAULT '';
 
-	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	/*DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
-        SET pr_message = 'PROJECTS.MESSAGE_ERROR_UPDATE_GRUPOFIT';
-	END ;
+        SET pr_message = 'ERROR store sp_cat_grupo_fit_fs';
+	END ;*/
 
     IF pr_id_grupo_fit  > 0 THEN
 		SET lo_id_grupo_fit   = CONCAT(' AND grupo_f.id_grupo_fit =  ', pr_id_grupo_fit);
@@ -55,16 +57,25 @@ BEGIN
 		SET  lo_fecha_fin_grupo_fit = CONCAT(' AND grupo_f.fecha_fin_grupo_fit <= "', pr_fecha_fin_grupo_fit, '" ');
     END IF;
 
+    IF pr_fecha_grupo_fit > "0000-00-00" THEN
+		SET  lo_fecha_ini_grupo_fit = "";
+		SET  lo_fecha_fin_grupo_fit = CONCAT(' AND ( grupo_f.fecha_ini_grupo_fit <= "', pr_fecha_grupo_fit, '" AND grupo_f.fecha_fin_grupo_fit >= "', pr_fecha_grupo_fit, '"  ) ');
+    END IF;
+
     IF (pr_estatus_grupo_fit != '' AND pr_estatus_grupo_fit != 'TODOS')THEN
 		SET lo_estatus_grupo_fit  = CONCAT(' AND grupo_f.estatus_grupo_fit  = "', pr_estatus_grupo_fit  ,'"');
 	END IF;
 
     IF ( pr_consulta_gral !='' ) THEN
+		IF pr_tipo_busqueda = 'F' THEN
 			SET lo_consulta_gral = CONCAT(' AND (grupo_f.cve_codigo_grupo  LIKE "%'	, pr_consulta_gral, '%"
 											OR grupo_f.desc_grupo_fit LIKE "%'		, pr_consulta_gral, '%"
                                             OR grupo_f.fecha_ini_grupo_fit LIKE "%'	, pr_consulta_gral, '%"
                                             OR grupo_f.fecha_fin_grupo_fit LIKE "%'	, pr_consulta_gral, '%"
                                             OR grupo_f.estatus_grupo_fit LIKE "%'	, pr_consulta_gral, '%" ) ');
+		ELSE
+			SET lo_consulta_gral = CONCAT(' AND ( grupo_f.cve_codigo_grupo LIKE CONCAT(''%',pr_consulta_gral,'%'') OR grupo_f.desc_grupo_fit LIKE CONCAT(''%',pr_consulta_gral,'%'')  ) ');
+        END IF;
 
 	END IF;
 
@@ -95,7 +106,7 @@ BEGIN
 							lo_fecha_fin_grupo_fit,
                             lo_consulta_gral,
 							lo_order_by,
-						   'LIMIT ?,?');
+						   ' LIMIT ?,?');
 
     PREPARE stmt
 	FROM @query;

@@ -15,6 +15,7 @@ BEGIN
 */
 
     DECLARE lo_moneda					VARCHAR(100);
+    DECLARE lo_sucursal					VARCHAR(200) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -30,6 +31,19 @@ BEGIN
 		SET lo_moneda = '';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND cxc.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
 	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 	SET @query = CONCAT(
@@ -41,7 +55,7 @@ BEGIN
 				JOIN ic_glob_tr_cxc_detalle AS detalle ON
 					cxc.id_cxc  = detalle.id_cxc
 				WHERE cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                AND cxc.id_sucursal = ',pr_id_sucursal,'
+                ',lo_sucursal,'
 				AND detalle.id_factura IS NULL
 				AND cxc.estatus = ''ACTIVO''
 				AND detalle.estatus = ''ACTIVO''

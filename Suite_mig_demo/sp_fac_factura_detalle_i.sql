@@ -70,6 +70,7 @@ BEGIN
 		@cambios 	:
 	*/
 
+
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		SET pr_message = 'ERROR store sp_fac_factura_detalle_i';

@@ -16,11 +16,14 @@ BEGIN
 */
 
     DECLARE lo_moneda_reporte				VARCHAR(255);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         SET pr_message = 'ERROR store sp_dash_ventas_graf_x_semestre_c';
 	END ;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 	/* DESARROLLO */
     /* VALIDAMOS LA MONEDA DEL REPORTE */
@@ -31,6 +34,21 @@ BEGIN
 	ELSE
 		SET lo_moneda_reporte = '';
     END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     /* BORRAMOS LAS TABLAS TEMPORALES */
     DROP TABLE IF EXISTS tmp_comisiones_ingreso;
@@ -63,7 +81,7 @@ BEGIN
 					JOIN ic_cat_tc_servicio serv ON
 						det.id_servicio = serv.id_servicio
 					WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND fac.id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
                     AND serv.id_producto != 5
 					AND fac.estatus != 2
                     AND serv.estatus = 1
@@ -101,7 +119,7 @@ BEGIN
 					JOIN ic_cat_tc_servicio serv ON
 						det.id_servicio = serv.id_servicio
 					WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND fac.id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
                     AND serv.id_producto != 5
 					AND fac.estatus != 2
                     AND serv.estatus = 1
@@ -154,7 +172,7 @@ BEGIN
 						det.id_factura = fac.id_factura
 					WHERE serv.id_producto = 5
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND fac.id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND fac.estatus != 2
 					AND serv.estatus = 1
                     AND fac.tipo_cfdi = ''I''
@@ -192,7 +210,7 @@ BEGIN
 						det.id_factura = fac.id_factura
 					WHERE serv.id_producto = 5
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND fac.id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND fac.estatus != 2
 					AND serv.estatus = 1
                     AND fac.tipo_cfdi = ''E''

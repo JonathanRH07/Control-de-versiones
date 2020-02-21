@@ -7,7 +7,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_dash_administrador_graf_folios_x_mes_c`(
 )
 BEGIN
 /*
-	@nombre:		sp_dash_administrador_graf_folios_x_mes_c		
+	@nombre:		sp_dash_administrador_graf_folios_x_mes_c
 	@fecha:			31/08/2019
 	@descripcion:	SP para llenar el primer recudro de los dashboards de ventas.
 	@autor:			Jonathan Ramirez

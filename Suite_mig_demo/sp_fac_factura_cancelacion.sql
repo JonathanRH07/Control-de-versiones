@@ -1,13 +1,14 @@
 DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_fac_factura_cancelacion`(
-	IN	pr_id_factura				INT,
-    IN	pr_cve_tipo_serie			CHAR(5),
-    IN	pr_id_razon_cancelacion		INT,
-	IN	pr_motivo_cancelacion		VARCHAR(256),
-    IN	pr_id_status_cancelacion	INT,
-    IN	pr_fecha_cancelacion		TIMESTAMP,
-    OUT pr_affect_rows 				INT,
-    OUT pr_message 	   				VARCHAR(500)
+	IN	pr_id_factura							INT,
+    IN	pr_cve_tipo_serie						CHAR(5),
+    IN	pr_id_razon_cancelacion					INT,
+	IN	pr_motivo_cancelacion					VARCHAR(256),
+    IN	pr_id_status_cancelacion				INT,
+    IN	pr_fecha_cancelacion					DATETIME,
+    IN  pr_id_usuario_cancelacion				INT,
+    OUT pr_affect_rows 							INT,
+    OUT pr_message 	   							VARCHAR(500)
 )
 BEGIN
 /*
@@ -47,7 +48,10 @@ BEGIN
 		id_razon_cancelacion = pr_id_razon_cancelacion,
 		motivo_cancelacion = pr_motivo_cancelacion,
         id_status_cancelacion = pr_id_status_cancelacion,
-        fecha_cancelacion = pr_fecha_cancelacion
+        fecha_cancelacion = pr_fecha_cancelacion,
+        fecha_solicitud_cancelacion = DATE_FORMAT(pr_fecha_cancelacion,  '%Y-%m-%d'),
+        hora_solicitud_cancelacion = DATE_FORMAT(pr_fecha_cancelacion,  '%H:%i:%s'),
+        id_usuario_cancelacion = pr_id_usuario_cancelacion
 	WHERE id_factura = pr_id_factura;
 
 

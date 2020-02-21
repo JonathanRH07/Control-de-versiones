@@ -15,11 +15,14 @@ BEGIN
 */
 
     DECLARE lo_moneda_reporte 	TEXT;
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		SET pr_message = 'ERROR store sp_dash_cobranza_graf_estimacion_c';
 	END ;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     /* DESARROLLO */
     /* VALIDAMOS LA MONEDA DEL REPORTE */
@@ -31,6 +34,21 @@ BEGIN
 		SET lo_moneda_reporte = 'cxc.saldo_moneda_base';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND cxc.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
     SET @queryac = CONCAT('
 						SELECT
 							DATE_FORMAT(cxc.fecha_vencimiento,''%m'') mes,
@@ -38,8 +56,8 @@ BEGIN
 							SUM(',lo_moneda_reporte,') total_dia
 						FROM ic_glob_tr_cxc cxc
 						WHERE cxc.estatus = ''ACTIVO''
-						AND cxc.id_grupo_empresa = ',pr_id_grupo_empresa,
-						' AND cxc.id_sucursal = ',pr_id_sucursal,
+						AND cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
+						',lo_sucursal,
 						' AND cxc.fecha_vencimiento >= SYSDATE()
                         AND saldo_moneda_base != 0
 						AND cxc.fecha_vencimiento <= DATE_ADD(SYSDATE(), INTERVAL 100 DAY)

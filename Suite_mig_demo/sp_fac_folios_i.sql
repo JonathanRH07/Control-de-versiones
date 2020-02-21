@@ -14,7 +14,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_fac_folios_i`(
 )
 BEGIN
 /*
-	@nombre:		sp_fac_folios_i		
+	@nombre:		sp_fac_folios_i
 	@fecha:			19/03/2019
 	@descripcion:	SP para agregar registros en la tabla de folios.
 	@autor:			Jonathan Ramirez

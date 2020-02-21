@@ -23,12 +23,15 @@ BEGIN
 		cxc.fac_numero,
 		cxc.fecha_emision,
 		cxc_detalle.importe
-	FROM  ic_fac_tr_factura_cfdi_relacionados cfdi_rel LEFT JOIN sat_tipos_rela_CFDI sat_rel
-		  ON cfdi_rel.tipo_relacion = sat_rel.c_TipoRelacion LEFT JOIN ic_glob_tr_cxc cxc
-		  ON cxc.id_cxc = cfdi_rel.id_cxc LEFT JOIN ic_glob_tr_cxc_detalle cxc_detalle
-		  ON cxc.id_cxc = cxc_detalle.id_cxc AND
-		  cfdi_rel.id_factura = cxc_detalle.id_factura
-	WHERE cfdi_rel.id_factura=pr_id_factura;
+	FROM  ic_fac_tr_factura_cfdi_relacionados cfdi_rel
+    LEFT JOIN sat_tipos_rela_CFDI sat_rel ON
+		cfdi_rel.tipo_relacion = sat_rel.c_TipoRelacion
+	LEFT JOIN ic_glob_tr_cxc cxc ON
+		cxc.id_cxc = cfdi_rel.id_cxc
+	LEFT JOIN ic_glob_tr_cxc_detalle cxc_detalle ON
+		cxc.id_cxc = cxc_detalle.id_cxc
+	AND cfdi_rel.id_factura = cxc_detalle.id_factura
+	WHERE cfdi_rel.id_factura = pr_id_factura;
 
 
 	# Mensaje de ejecución.

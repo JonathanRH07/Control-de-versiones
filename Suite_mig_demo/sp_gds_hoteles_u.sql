@@ -1,5 +1,5 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_gds_hoteles_u`(IN  pr_id_gds_hoteles 		INT(11), 
+CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_gds_hoteles_u`(IN  pr_id_gds_hoteles 		INT(11),
 	IN  pr_id_factura_detalle 	INT(11),
 	IN  pr_id_boleto 			INT(11),
 	IN  pr_clave_reserva 		VARCHAR(20),

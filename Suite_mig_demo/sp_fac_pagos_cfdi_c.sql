@@ -5,7 +5,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_fac_pagos_cfdi_c`(
 )
 BEGIN
 /*
-	@nombre: 		sp_fac_pagos_cfdi_c	
+	@nombre: 		sp_fac_pagos_cfdi_c
 	@fecha: 		23/11/2018
 	@descripcion: 	SP para buscar un registro especifico
 	@autor:  		Yazbek Kido

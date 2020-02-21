@@ -20,12 +20,12 @@ BEGIN
 
 	DECLARE lo_id_inserted_forma_pago INT;
 
-	/*DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		 SET pr_message = 'WAY_TO_PAY.MESSAGE_ERROR_CREATE_FORMAPAGO';
 		 SET pr_id_inserted_forma_pago = 0;
 		 SET pr_affected_rows = 0;
-	END;*/
+	END;
 
 	CALL sp_help_get_row_count_params(
 		'ic_glob_tr_forma_pago',

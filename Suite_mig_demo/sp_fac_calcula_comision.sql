@@ -339,6 +339,16 @@ BEGIN
 
 			END IF;
         END IF;
+	ELSE
+		IF pr_porcentaje_tit_2 > 0 THEN
+			SET lo_calculo_tit = (((pr_monto*pr_cantidad)*pr_porcentaje_tit_2)/100);
+			SET lo_valor = pr_porcentaje_tit_2;
+		END IF;
+
+		IF pr_monto_tit_2 > 0 THEN
+			SET lo_calculo_tit = ((pr_monto_tit_2*pr_cantidad));
+			SET lo_valor = ((pr_monto/pr_porcentaje_tit_2)/100);
+		END IF;
     END IF;
 
 
@@ -556,12 +566,22 @@ BEGIN
 				END IF;
 
 				IF pr_monto_aux_2 > 0 AND pr_utilidad_mont = 0 AND pr_utilidad_porc = 0 THEN
-					SET lo_calculo_aux = ((pr_monto_tit_2*pr_cantidad));
+					SET lo_calculo_aux = ((pr_monto_aux_2*pr_cantidad));
 					SET lo_valor_aux = ((lo_valor_aux/pr_monto_aux_2)*100);
 				END IF;
 
 			END IF;
         END IF;
+	ELSE
+		IF pr_porcentaje_aux_2 > 0 THEN
+			SET lo_calculo_aux = (((pr_monto*pr_cantidad)*pr_porcentaje_aux_2)/100);
+			SET lo_valor_aux = pr_porcentaje_aux_2;
+		END IF;
+
+		IF pr_monto_aux_2 > 0 THEN
+			SET lo_calculo_aux = ((pr_monto_aux_2*pr_cantidad));
+			SET lo_valor_aux = ((pr_monto/pr_monto_aux_2)/100);
+		END IF;
     END IF;
 
     /* ---------------*/

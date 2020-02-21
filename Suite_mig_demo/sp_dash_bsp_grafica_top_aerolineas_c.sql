@@ -14,6 +14,7 @@ BEGIN
 	@cambios:
 */
 	DECLARE lo_moneda_reporte				VARCHAR(255);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -27,6 +28,19 @@ BEGIN
 		SET lo_moneda_reporte = '/fac.tipo_cambio_eur';
 	ELSE
 		SET lo_moneda_reporte = '';
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -51,7 +65,7 @@ BEGIN
 						JOIN ct_glob_tc_aerolinea airline ON
 							vuelos.clave_linea_aerea = airline.clave_aerolinea
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 						AND tipo_cfdi = ''I''
 						AND fac.estatus != 2
@@ -80,7 +94,7 @@ BEGIN
 						JOIN ct_glob_tc_aerolinea airline ON
 							vuelos.clave_linea_aerea = airline.clave_aerolinea
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 						AND tipo_cfdi = ''E''
 						AND fac.estatus != 2
@@ -101,6 +115,7 @@ BEGIN
 	FROM tmp_top_airlines_ing ingreso
 	LEFT JOIN tmp_top_airlines_egr egreso ON ingreso.clave = egreso.clave
 	GROUP BY ingreso.clave
+    HAVING total_neto > 0
 	ORDER BY total_neto DESC
 	LIMIT 10;
 

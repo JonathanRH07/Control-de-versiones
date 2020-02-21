@@ -14,9 +14,8 @@ BEGIN
 	@cambios:
 */
 
-    DECLARE lo_contador_con_tarjeta			INT;
-    DECLARE lo_contador_sin_tarjeta			INT;
     DECLARE lo_moneda_reporte				VARCHAR(75);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -34,10 +33,25 @@ BEGIN
 		SET lo_moneda_reporte = '';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
 	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     DROP TABLE IF EXISTS tmp_cxs_ingreso;
     DROP TABLE IF EXISTS tmp_cxs_egreso;
+    DROP TABLE IF EXISTS tmp_cxs_1;
+	DROP TABLE IF EXISTS tmp_cxs_2;
 
 	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -57,7 +71,7 @@ BEGIN
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
 						AND serv.id_producto = 5
 						AND serv.estatus = 1
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND fac.estatus != 2
 						AND fac.tipo_cfdi = ''I''
                         AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
@@ -86,7 +100,7 @@ BEGIN
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
 						AND serv.id_producto = 5
 						AND serv.estatus = 1
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND fac.estatus != 2
 						AND fac.tipo_cfdi = ''E''
                         AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
@@ -99,14 +113,43 @@ BEGIN
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+    CREATE TEMPORARY TABLE tmp_cxs_1
     SELECT
 		ingreso.cve_servicio,
 		ingreso.descripcion,
-		(IFNULL(ingreso.no_cargos, 0) - IFNULL(egreso.no_cargos, 0)) no_cargos,
-		(IFNULL(ingreso.total, 0) - IFNULL(egreso.total, 0)) total
+		IFNULL(IFNULL(ingreso.no_cargos, 0) - IFNULL(egreso.no_cargos, 0), 0) no_cargos,
+		IFNULL(IFNULL(ingreso.total, 0) - IFNULL(egreso.total, 0), 0) total
 	FROM tmp_cxs_ingreso ingreso
 	LEFT JOIN tmp_cxs_egreso egreso ON
 		ingreso.cve_servicio = egreso.cve_servicio;
+
+    CREATE TEMPORARY TABLE tmp_cxs_2
+	SELECT
+		IFNULL(ingreso.cve_servicio, egreso.cve_servicio) cve_servicio,
+		IFNULL(ingreso.descripcion, egreso.descripcion) descripcion,
+		IFNULL(IFNULL(ingreso.no_cargos, 0) - IFNULL(egreso.no_cargos, 0), 0) no_cargos,
+		IFNULL(IFNULL(ingreso.total, 0) - IFNULL(egreso.total, 0), 0) total
+	FROM tmp_cxs_ingreso ingreso
+	RIGHT JOIN tmp_cxs_egreso egreso ON
+		ingreso.cve_servicio = egreso.cve_servicio
+	WHERE ingreso.cve_servicio IS NULL;
+
+    SELECT
+		COUNT(*)
+	INTO
+		@lo_contador
+	FROM tmp_cxs_2;
+
+    IF @lo_contador = 0 THEN
+		SELECT *
+        FROM tmp_cxs_1;
+	ELSE
+		SELECT *
+        FROM tmp_cxs_1
+        UNION
+		SELECT *
+        FROM tmp_cxs_2;
+    END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

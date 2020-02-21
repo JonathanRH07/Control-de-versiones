@@ -3,7 +3,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_fac_prove_imp_serv_i`(
 	IN  pr_id_prove_servicio 	INT(11),
 	IN  pr_id_impuesto 			INT(11),
     IN  pr_tipo_valor_cantidad	CHAR(1),
-	IN  pr_cantidad 			DECIMAL(8,2),
+	IN  pr_cantidad 			DECIMAL(16,6),
 	IN  pr_por_pagar 			CHAR(2),
     IN  pr_base_valor			DECIMAL(16,2),
 	IN  pr_id_usuario 			INT(11),

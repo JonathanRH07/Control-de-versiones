@@ -112,12 +112,11 @@ BEGIN
 							' LIMIT ?,?'
 	);
 
+	-- SELECT @uqery;
 	PREPARE stmt FROM @query;
-
 	SET @id_grupo_empresa = pr_id_grupo_empresa;
 	SET @ini = pr_ini_pag;
 	SET @fin = pr_fin_pag;
-
 	EXECUTE stmt USING @id_grupo_empresa, @ini, @fin;
 	DEALLOCATE PREPARE stmt;
 

@@ -22,7 +22,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_serie_u`(
 	OUT pr_message 	        		VARCHAR(500))
 BEGIN
 /*
-	@nombre:		sp_cat_serie_u 		
+	@nombre:		sp_cat_serie_u
 	@fecha:			22/08/2016
 	@descripcion:	SP para actualizar registro de catalogo Series.
 	@autor:			Odeth Negrete

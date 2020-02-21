@@ -22,10 +22,10 @@ BEGIN
     DECLARE lo_base_valor 				VARCHAR(100) DEFAULT '';
 	DECLARE lo_desc_tipo_proveedor  	VARCHAR(100) DEFAULT '';
 
-	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	/*DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         SET pr_message = 'ERROR store sp_fac_prove_imp_serv_u';
-	END ;
+	END ;*/
 
 
 	/*

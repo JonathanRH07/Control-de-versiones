@@ -8,7 +8,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_fac_factura_cfdi_i`(
 	IN  pr_genera_xml 					CHAR(1),
 	IN  pr_factura_xml 					BLOB,
 	IN  pr_genera_pdf 					CHAR(1),
-	IN  pr_factura_pdf 					BLOB,
+	IN  pr_factura_pdf 					LONGBLOB,
 	IN  pr_fecha_envio_email 			DATETIME,
 	IN  pr_timbre_cfdi 					TEXT,
 	IN  pr_version_timbrado 			VARCHAR(4),

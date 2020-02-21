@@ -18,12 +18,26 @@ BEGIN
     DECLARE lo_no_pnr_facturados		INT;
     DECLARE lo_no_pnr_error				INT;
     DECLARE lo_no_pnr_porc_efec			DECIMAL(5,2);
+    DECLARE lo_sucursal					VARCHAR(200) DEFAULT '';
 
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
 		SET pr_message = 'ERROR sp_dash_reportes_indicadores_c';
 	END;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+    END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -37,15 +51,24 @@ BEGIN
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-    SELECT
-		COUNT(*)
-	INTO
-		lo_no_pnr_facturados
-	FROM ic_gds_tr_general
-	WHERE id_grupo_empresa = pr_id_grupo_empresa
-	AND id_sucursal = pr_id_sucursal
-	AND DATE_FORMAT(fecha_recepcion, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')
-	AND fac_numero IS NOT NULL;
+    SET @query_pnr_fac = CONCAT(
+				'
+				SELECT
+					COUNT(*)
+				INTO
+					@lo_no_pnr_facturados
+				FROM ic_gds_tr_general
+				WHERE id_grupo_empresa = ',pr_id_grupo_empresa,'
+				',lo_sucursal,'
+				AND DATE_FORMAT(fecha_recepcion, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
+				AND fac_numero IS NOT NULL');
+
+	-- SELECT @query_pnr_fac;
+	PREPARE stmt FROM @query_pnr_fac;
+	EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    SET lo_no_pnr_facturados = @lo_no_pnr_facturados;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

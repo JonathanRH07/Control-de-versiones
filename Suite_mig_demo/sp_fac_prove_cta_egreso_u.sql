@@ -9,7 +9,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_fac_prove_cta_egreso_u`(
 	OUT pr_message		        	VARCHAR(500))
 BEGIN
 /*
-	@nombre:		sp_fac_prove_cta_egreso_u	
+	@nombre:		sp_fac_prove_cta_egreso_u
 	@fecha:			13/01/2017
 	@descripcion:	SP para actualizar registros en la tabla prove_cta_egreso
 	@autor:			Griselda Medina Medina

@@ -8,7 +8,7 @@ BEGIN
 /*
     @nombre:		sp_fac_factura_cfdi_cancelados_c
 	@fecha:			2020/01/10
-	@descripcion:	sp para consultar los CFDI's relacionados por factura y cliente
+	@descripcion:	sp para consultar los CFDI's relacionados cliente
 	@autor:			Jonathan Ramirez
 	@cambios:
 */
@@ -29,14 +29,13 @@ BEGIN
 	FROM ic_fac_tr_factura fac
 	JOIN ic_fac_tr_factura_cfdi cfdi ON
 		fac.id_factura = cfdi.id_factura
-	JOIN ic_fac_tr_factura_cfdi_relacionados rel ON
+	LEFT JOIN ic_fac_tr_factura_cfdi_relacionados rel ON
 		fac.id_factura = rel.id_factura
 	JOIN ic_cat_tr_serie ser ON
 		fac.id_serie = ser.id_serie
 	WHERE fac.id_grupo_empresa = pr_id_grupo_empresa
 	AND id_cliente = pr_id_cliente
-	AND estatus = 2
-    AND cfdi_timbrado = 'S';
+	AND fac.id_status_cancelacion = 6;
 
 	# Mensaje de ejecución.
 	SET pr_message = 'SUCCESS';

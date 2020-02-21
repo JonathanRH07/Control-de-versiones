@@ -17,6 +17,7 @@ BEGIN
 	DECLARE lo_moneda					VARCHAR(150);
     DECLARE lo_total_ventas				DECIMAL(15,2);
     DECLARE lo_total_cargos				DECIMAL(15,2);
+    DECLARE lo_sucursal					VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -27,9 +28,22 @@ BEGIN
     IF pr_moneda_reporte = 149 THEN
         SET lo_moneda = '/tipo_cambio_usd';
 	ELSEIF pr_moneda_reporte = 49 THEN
-        SET lo_moneda = '/tipo_cambio_usd';
+        SET lo_moneda = '/tipo_cambio_eur';
 	ELSE
 		SET lo_moneda = '';
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
 	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -48,7 +62,7 @@ BEGIN
 				JOIN ic_cat_tc_servicio serv ON
 					det.id_servicio = serv.id_servicio
 				WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-				AND fac.id_sucursal = ',pr_id_sucursal,'
+				',lo_sucursal,'
 				AND serv.id_producto != 5
 				AND serv.estatus = 1
 				AND fac.estatus != 2
@@ -73,7 +87,7 @@ BEGIN
 				JOIN ic_cat_tc_servicio serv ON
 					det.id_servicio = serv.id_servicio
 				WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-				AND fac.id_sucursal = ',pr_id_sucursal,'
+				',lo_sucursal,'
 				AND serv.id_producto != 5
 				AND serv.estatus = 1
 				AND fac.estatus != 2
@@ -104,7 +118,7 @@ BEGIN
 					det.id_factura = fac.id_factura
 				WHERE serv.id_producto = 5
 				AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-				AND fac.id_sucursal = ',pr_id_sucursal,'
+				',lo_sucursal,'
                 AND serv.estatus = 1
 				AND fac.estatus != 2
 				AND fac.tipo_cfdi = ''I''
@@ -129,7 +143,7 @@ BEGIN
 					det.id_factura = fac.id_factura
 				WHERE serv.id_producto = 5
 				AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-				AND fac.id_sucursal = ',pr_id_sucursal,'
+				',lo_sucursal,'
                 AND serv.estatus = 1
 				AND fac.estatus != 2
 				AND fac.tipo_cfdi = ''E''

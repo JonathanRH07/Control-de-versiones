@@ -18,6 +18,7 @@ BEGIN
 */
 
     DECLARE lo_moneda_reporte				VARCHAR(255);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -31,6 +32,19 @@ BEGIN
 		SET lo_moneda_reporte = '/tipo_cambio_eur';
 	ELSE
 		SET lo_moneda_reporte = '';
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -56,10 +70,11 @@ BEGIN
 				JOIN ic_cat_tr_cliente cli ON
 					fac.id_cliente = cli.id_cliente
 				WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-				AND fac.id_sucursal = ',pr_id_sucursal,'
+				',lo_sucursal,'
                 AND fac.hora_factura IS NOT NULL
                 AND fac.estatus != 2
                 AND cli.estatus = 1
+                AND fac.tipo_cfdi = ''I''
 				AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m-%d'') <= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 3 MONTH), ''%Y-%m-%d'')
                 AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m-%d'') >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 12 MONTH), ''%Y-%m-%d'')
 				-- GROUP BY fac.id_cliente
@@ -85,10 +100,11 @@ BEGIN
 				JOIN ic_cat_tr_cliente cli ON
 					fac.id_cliente = cli.id_cliente
 				WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-				AND fac.id_sucursal = ',pr_id_sucursal,'
+				',lo_sucursal,'
                 AND fac.hora_factura IS NOT NULL
                 AND fac.estatus != 2
                 AND cli.estatus = 1
+                AND fac.tipo_cfdi = ''I''
                 AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m-%d'') > DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 3 MONTH), ''%Y-%m-%d'')
 				AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m-%d'') <= DATE_FORMAT(NOW(), ''%Y-%m-%d'')
 				-- GROUP BY fac.id_cliente
@@ -108,7 +124,6 @@ BEGIN
 	FROM tmp_1 a
 	LEFT JOIN tmp_2 b ON
 		a.id_cliente = b.id_cliente
-	WHERE b.id_cliente IS NULL
 	ORDER BY a.id_factura DESC ) a
 	GROUP BY a.id_cliente
     ORDER BY a.fecha_factura DESC

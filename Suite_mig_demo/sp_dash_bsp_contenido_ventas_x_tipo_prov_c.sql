@@ -18,6 +18,7 @@ BEGIN
 */
 
 	DECLARE lo_moneda_reporte				VARCHAR(255);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -33,10 +34,26 @@ BEGIN
 		SET lo_moneda_reporte = '';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     DROP TABLE IF EXISTS tmp_suma_tipo_prov_ing;
     DROP TABLE IF EXISTS tmp_suma_tipo_prov_egr;
+    DROP TABLE IF EXISTS tmp_suma_tipo_prov_1;
+    DROP TABLE IF EXISTS tmp_suma_tipo_prov_2;
+    DROP TABLE IF EXISTS tmp_suma_tipo_prov;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -71,8 +88,8 @@ BEGIN
 									prov.id_tipo_proveedor = pro_typ.id_tipo_proveedor
 								WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 								AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-								AND fac.id_sucursal = ',pr_id_sucursal,'
-								AND serv.id_producto = 1
+								',lo_sucursal,'
+								-- AND serv.id_producto = 1
 								AND prov.id_tipo_proveedor IN (1, 2, 3)
 								AND fac.estatus != 2
 								AND fac.tipo_cfdi = ''I''
@@ -113,8 +130,8 @@ BEGIN
 									prov.id_tipo_proveedor = pro_typ.id_tipo_proveedor
 								WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 								AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-								AND fac.id_sucursal = ',pr_id_sucursal,'
-								AND serv.id_producto = 1
+								',lo_sucursal,'
+								-- AND serv.id_producto = 1
 								AND prov.id_tipo_proveedor IN (1, 2, 3)
 								AND fac.estatus != 2
 								AND fac.tipo_cfdi = ''E''
@@ -125,22 +142,7 @@ BEGIN
 	PREPARE stmt FROM @queryprov_egr;
 	EXECUTE stmt;
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-    SELECT
-		COUNT(*)
-	INTO
-		pr_rows_tot_table
-	FROM(
-		SELECT
-			COUNT(*)
-		FROM tmp_suma_tipo_prov_ing ingreso
-		LEFT JOIN tmp_suma_tipo_prov_egr egreso ON
-			ingreso.id_tipo_proveedor = egreso.id_tipo_proveedor
-		GROUP BY ingreso.id_tipo_proveedor) a;
-
-	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
+    CREATE TEMPORARY TABLE tmp_suma_tipo_prov_1
 	SELECT
 		ingreso.id_tipo_proveedor,
 		ingreso.desc_tipo_proveedor,
@@ -150,8 +152,61 @@ BEGIN
 	FROM tmp_suma_tipo_prov_ing ingreso
 	LEFT JOIN tmp_suma_tipo_prov_egr egreso ON
 		ingreso.id_tipo_proveedor = egreso.id_tipo_proveedor
-	GROUP BY ingreso.id_tipo_proveedor
-    LIMIT pr_ini_pag, pr_fin_pag;
+	GROUP BY ingreso.id_tipo_proveedor;
+
+    CREATE TEMPORARY TABLE tmp_suma_tipo_prov_2
+    SELECT
+		IFNULL(ingreso.id_tipo_proveedor, egreso.id_tipo_proveedor) id_tipo_proveedor,
+		IFNULL(ingreso.desc_tipo_proveedor, egreso.desc_tipo_proveedor) desc_tipo_proveedor,
+		IFNULL(SUM(IFNULL(ingreso.total_nacionales, 0) - IFNULL(egreso.total_nacionales, 0)), 0) total_nacionales,
+		IFNULL(SUM(IFNULL(ingreso.total_internacionales, 0) - IFNULL(egreso.total_internacionales, 0)), 0) total_internacionales,
+		(IFNULL(SUM(IFNULL(ingreso.total_nacionales, 0) - IFNULL(egreso.total_nacionales, 0)), 0)) + (IFNULL(SUM(IFNULL(ingreso.total_internacionales, 0) - IFNULL(egreso.total_internacionales, 0)), 0)) suma_peridod
+	FROM tmp_suma_tipo_prov_ing ingreso
+	RIGHT JOIN tmp_suma_tipo_prov_egr egreso ON
+		ingreso.id_tipo_proveedor = egreso.id_tipo_proveedor
+	WHERE ingreso.id_tipo_proveedor IS NULL
+	GROUP BY ingreso.id_tipo_proveedor;
+
+	SELECT
+		COUNT(*)
+	INTO
+		@lo_contador
+    FROM tmp_suma_tipo_prov_2;
+
+    IF @lo_contador = 0 THEN
+		SELECT *
+        FROM tmp_suma_tipo_prov_1
+        LIMIT pr_ini_pag, pr_fin_pag;
+	ELSE
+		SELECT *
+        FROM tmp_suma_tipo_prov_1
+        UNION
+        SELECT *
+        FROM tmp_suma_tipo_prov_2
+        LIMIT pr_ini_pag, pr_fin_pag;
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+	IF @lo_contador = 0 THEN
+
+		SELECT
+			COUNT(*)
+		INTO
+			pr_rows_tot_table
+        FROM tmp_suma_tipo_prov_1;
+	ELSE
+		SELECT
+			COUNT(*)
+		INTO
+			pr_rows_tot_table
+		FROM(
+			SELECT *
+			FROM tmp_suma_tipo_prov_1
+			UNION
+			SELECT *
+			FROM tmp_suma_tipo_prov_2) a;
+    END IF;
 
 	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

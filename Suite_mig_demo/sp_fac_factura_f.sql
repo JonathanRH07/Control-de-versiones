@@ -255,9 +255,11 @@ BEGIN
                 gds.texto_pnr,
 				fac.id_status_cancelacion,
 				est_can.descripcion AS status_can_desc,
-                razon_canc.descripcion razon_cancel,
+                razon_canc.id_razon_cancelacion/*descripcion*/ razon_cancel,
 				fac.fecha_solicitud_cancelacion,
-				fac.hora_solicitud_cancelacion, ',
+				fac.hora_solicitud_cancelacion,
+                fac.motivo_cancelacion observaciones,
+                IFNULL(usuario_cancelacion.usuario,''DESCONOCIDO'') usuario_canc,',
                 lo_idioma_camp,
                 ' fac.fecha_mod
 			FROM ic_fac_tr_factura fac
@@ -292,7 +294,9 @@ BEGIN
 			LEFT JOIN ic_fac_tc_factura_estatus_cancelacion est_can ON
 				fac.id_status_cancelacion = est_can.id_estatus_cancelacion
 			LEFT JOIN ic_fac_tr_razon_cancelacion_factura razon_canc ON
-				fac.id_razon_cancelacion = razon_canc.id_razon_cancelacion ',
+				fac.id_razon_cancelacion = razon_canc.id_razon_cancelacion
+			LEFT JOIN suite_mig_conf.st_adm_tr_usuario usuario_cancelacion ON
+				usuario_cancelacion.id_usuario = fac.id_usuario_cancelacion',
 			lo_idioma_join,
 			' WHERE fac.id_grupo_empresa = ? ',
                 lo_id_factura,
@@ -319,6 +323,7 @@ BEGIN
 			' LIMIT ?,?'
 	);
 
+	-- SELECT @query;
     PREPARE stmt FROM @query;
 
 	SET @id_grupo_empresa = pr_id_grupo_empresa;

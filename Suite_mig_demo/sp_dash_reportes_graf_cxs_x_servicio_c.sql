@@ -15,6 +15,7 @@ BEGIN
 */
 
     DECLARE lo_moneda					VARCHAR(100);
+    DECLARE lo_sucursal					VARCHAR(200) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -25,9 +26,22 @@ BEGIN
     IF pr_moneda_reporte = 149 THEN
         SET lo_moneda = '/tipo_cambio_usd';
 	ELSEIF pr_moneda_reporte = 49 THEN
-        SET lo_moneda = '/tipo_cambio_usd';
+        SET lo_moneda = '/tipo_cambio_eur';
 	ELSE
 		SET lo_moneda = '';
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -46,8 +60,8 @@ BEGIN
 							det.id_factura = fac.id_factura
 						WHERE serv.id_producto = 5
 						AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND serv.estatus = 1','
-                        AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
+                        AND serv.estatus = 1','
 						AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 						GROUP BY serv.descripcion'
 						);

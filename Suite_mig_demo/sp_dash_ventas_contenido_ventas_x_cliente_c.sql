@@ -21,6 +21,7 @@ BEGIN
     DECLARE lo_moneda_reporte2				VARCHAR(150);
     DECLARE lo_moneda_reporte3				VARCHAR(150);
     DECLARE lo_moneda_reporte4				VARCHAR(150);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -34,6 +35,19 @@ BEGIN
 		SET lo_moneda_reporte = '/tipo_cambio_eur';
 	ELSE
 		SET lo_moneda_reporte = '';
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -58,7 +72,7 @@ BEGIN
 						JOIN ic_cat_tr_cliente cli ON
 							fac.id_cliente = cli.id_cliente
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 						AND fac.estatus != 2
 						AND tipo_cfdi = ''I''
@@ -82,7 +96,7 @@ BEGIN
 						JOIN ic_cat_tr_cliente cli ON
 							fac.id_cliente = cli.id_cliente
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 						AND fac.estatus != 2
 						AND tipo_cfdi = ''E''

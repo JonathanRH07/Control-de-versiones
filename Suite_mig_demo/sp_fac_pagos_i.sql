@@ -40,7 +40,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_fac_pagos_i`(
     IN  pr_concepto_c					VARCHAR(200),
     IN  pr_recibimos_de					VARCHAR(200),
     IN  pr_sello_spei                   TEXT,
-    IN  pr_factura_pdf          	    BLOB,
+    IN  pr_factura_pdf          	    MEDIUMBLOB,
     OUT pr_inserted_id					INT,
     OUT pr_affect_rows      			INT,
     OUT pr_message 	         			VARCHAR(500),

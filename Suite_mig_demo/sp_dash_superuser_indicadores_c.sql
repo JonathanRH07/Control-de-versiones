@@ -14,15 +14,16 @@ BEGIN
 	@cambios:
 */
 
-	DECLARE lo_tot_venta_t		TEXT;
-    DECLARE lo_tot_dia_t		TEXT;
-    DECLARE lo_cob_atraso_t		TEXT;
-    DECLARE lo_tot_cobrado_t	TEXT;
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
+	DECLARE lo_tot_venta_t					TEXT;
+    DECLARE lo_tot_dia_t					TEXT;
+    DECLARE lo_cob_atraso_t					TEXT;
+    DECLARE lo_tot_cobrado_t				TEXT;
 
-    DECLARE lo_tot_venta		DECIMAL(16,2);
-    DECLARE lo_tot_dia			DECIMAL(16,2);
-    DECLARE lo_cob_atraso		DECIMAL(16,2);
-    DECLARE lo_tot_cobrado		DECIMAL(16,2);
+    DECLARE lo_tot_venta					DECIMAL(16,2);
+    DECLARE lo_tot_dia						DECIMAL(16,2);
+    DECLARE lo_cob_atraso					DECIMAL(16,2);
+    DECLARE lo_tot_cobrado					DECIMAL(16,2);
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -50,6 +51,19 @@ BEGIN
         SET lo_tot_cobrado_t = 'detalle.importe_moneda_base';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND cxc.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
     /* ---------------------------------------------------------------------------------------------- */
 
     SET @querytv_ing = CONCAT('
@@ -62,7 +76,7 @@ BEGIN
 							cxc.id_factura = det.id_factura
 						WHERE cxc.estatus != 2
 						AND cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND cxc.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
                         AND tipo_cfdi = ''I''
 						AND DATE_FORMAT(cxc.fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
     ');
@@ -80,7 +94,7 @@ BEGIN
 							cxc.id_factura = det.id_factura
 						WHERE cxc.estatus != 2
 						AND cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND cxc.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
                         AND tipo_cfdi = ''E''
 						AND DATE_FORMAT(cxc.fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
     ');
@@ -102,7 +116,7 @@ BEGIN
 							cxc.id_factura = det.id_factura
 						WHERE cxc.estatus != 2
 						AND cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND cxc.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
                         AND tipo_cfdi = ''I''
 						AND cxc.fecha_factura = DATE_FORMAT(NOW(), ''%Y-%m-%d'')
     ');
@@ -120,7 +134,7 @@ BEGIN
 							cxc.id_factura = det.id_factura
 						WHERE cxc.estatus != 2
 						AND cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND cxc.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
                         AND tipo_cfdi = ''E''
 						AND cxc.fecha_factura = DATE_FORMAT(NOW(), ''%Y-%m-%d'')
     ');
@@ -140,7 +154,7 @@ BEGIN
 						FROM ic_glob_tr_cxc cxc
 						WHERE estatus = ''ACTIVO''
 						AND id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND saldo_moneda_base != 0
                         AND fecha_vencimiento <= NOW()
 						AND DATE_FORMAT(fecha_vencimiento, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
@@ -160,7 +174,7 @@ BEGIN
 						JOIN ic_glob_tr_cxc_detalle detalle ON
 							cxc.id_cxc  = detalle.id_cxc
 						WHERE cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND cxc.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND detalle.estatus = ''ACTIVO''
 						AND detalle.id_factura IS NULL
 						AND cxc.estatus = ''ACTIVO''

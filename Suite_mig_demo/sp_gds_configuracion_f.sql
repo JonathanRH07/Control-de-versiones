@@ -31,10 +31,10 @@ BEGIN
     DECLARE lo_order_by 		VARCHAR(300) DEFAULT '';
     DECLARE lo_consulta_gral  	VARCHAR(1000) DEFAULT '';
 
-	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	/*DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         SET pr_message = 'ERROR store sp_gds_configuracion_f';
-	END ;
+	END ;*/
 
 	IF pr_lencli > 0 THEN
 		SET lo_lencli = CONCAT(' AND conf.lencli = ', pr_lencli, ' ');
@@ -78,8 +78,13 @@ BEGIN
                             conf.cve_gds,
                             conf.id_moneda_nac,
                             conf.id_moneda_int,
+                            conf.id_moneda_lowcost_nac,
+                            conf.id_moneda_lowcost_int,
                             conf.id_tipser_bolint,
                             conf.id_tipser_bolnac,
+                            conf.id_tipser_lowcost_int,
+                            conf.id_tipser_lowcost,
+                            conf.boleto_lowcost_inicial,
                             conf.lencli,
                             conf.finpnr,
                             conf.separa,
@@ -87,8 +92,15 @@ BEGIN
                             gds.nombre as nombre_gds,
                             sernac.descripcion desc_bolnac,
                             serint.descripcion desc_bolint,
+                            sernac.cve_servicio cve_bolnac,
+                            serint.cve_servicio cve_bolint,
                             monnac.clave_moneda cve_moneda_nac,
                             monint.clave_moneda cve_moneda_int,
+                            sernac_lowcost.descripcion desc_lowcost,
+                            serint_lowcost.descripcion desc_lowcost_int,
+                            sernac_lowcost.cve_servicio cve_lowcost,
+                            serint_lowcost.cve_servicio cve_lowcost_int,
+
                             conf.fecha_mod fecha_mod,
 							concat(usuario.nombre_usuario," ",
 							usuario.paterno_usuario) usuario_mod
@@ -101,6 +113,10 @@ BEGIN
 							ON sernac.id_servicio=conf.id_tipser_bolnac
 						LEFT JOIN ic_cat_tc_servicio serint
 							ON serint.id_servicio=conf.id_tipser_bolint
+						LEFT JOIN ic_cat_tc_servicio sernac_lowcost
+							ON sernac_lowcost.id_servicio=conf.id_tipser_lowcost
+						LEFT JOIN ic_cat_tc_servicio serint_lowcost
+							ON serint_lowcost.id_servicio=conf.id_tipser_lowcost_int
 						LEFT JOIN ct_glob_tc_moneda monnac
 							ON monnac.id_moneda=conf.id_moneda_nac
 						LEFT JOIN ct_glob_tc_moneda monint

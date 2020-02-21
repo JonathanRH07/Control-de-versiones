@@ -1,6 +1,6 @@
 DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_meta_venta_tipo_i`(
-	IN  pr_id_grupo_empresa     INT(11),
+	-- IN  pr_id_grupo_empresa     INT(11),
     IN 	pr_id_meta_venta		INT(11),
     IN 	pr_id_vendedor			INT(11),
     IN 	pr_id_sucursal			INT(11),

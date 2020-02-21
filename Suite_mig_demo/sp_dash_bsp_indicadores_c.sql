@@ -19,6 +19,7 @@ BEGIN
     DECLARE lo_suma_bolnal				DECIMAL(16,2);
     DECLARE lo_suma_bolint				DECIMAL(16,2);
     DECLARE lo_boletos_facturados		INT;
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -32,6 +33,19 @@ BEGIN
 		SET lo_moneda = '/fac.tipo_cambio_eur';
 	ELSE
 		SET lo_moneda = '';
+    END IF;
+
+	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
 	/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -53,7 +67,7 @@ BEGIN
 				JOIN ic_gds_tr_vuelos vuelos ON
 					det.id_factura_detalle = vuelos.id_factura_detalle
 				WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-				AND id_sucursal = ',pr_id_sucursal,'
+				',lo_sucursal,'
 				AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 				AND tipo_cfdi = ''I''
 				AND fac.estatus != 2
@@ -77,7 +91,7 @@ BEGIN
 				JOIN ic_gds_tr_vuelos vuelos ON
 					det.id_factura_detalle = vuelos.id_factura_detalle
 				WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-				AND id_sucursal = ',pr_id_sucursal,'
+				',lo_sucursal,'
 				AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 				AND tipo_cfdi = ''E''
 				AND fac.estatus != 2
@@ -87,17 +101,16 @@ BEGIN
 	PREPARE stmt FROM @query1_egr;
 	EXECUTE stmt;
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 	SET @lo_suma_total_airlines = 0;
 	SET @query1 = CONCAT(
 				'
 				SELECT
-					IFNULL((ingreso.monto_moneda_base - egreso.monto_moneda_base), 0.00) monto_moneda_base
+					IFNULL((IFNULL(ingreso.monto_moneda_base, 0) - IFNULL(egreso.monto_moneda_base,0 )), 0.00) monto_moneda_base
 				INTO
 					@lo_suma_total_airlines
 				FROM tmp_aerolinea_acumulado_ingreso ingreso
-				JOIN tmp_aerolinea_acumulado_egreso egreso ON
+				LEFT JOIN tmp_aerolinea_acumulado_egreso egreso ON
 					ingreso.id_grupo_empresa = egreso.id_grupo_empresa');
 
 	-- SELECT @query1;
@@ -125,9 +138,9 @@ BEGIN
 						det.id_servicio = serv.id_servicio
 					WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                    AND fac.id_sucursal = ',pr_id_sucursal,'
+                    ',lo_sucursal,'
 					AND serv.alcance = 1
-					AND serv.id_producto = 1
+					-- AND serv.id_producto = 1
                     AND fac.estatus != 2
                     AND fac.tipo_cfdi = ''I''
 					AND vuelos.clave_linea_aerea IS NOT NULL');
@@ -152,9 +165,9 @@ BEGIN
 						det.id_servicio = serv.id_servicio
 					WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                    AND fac.id_sucursal = ',pr_id_sucursal,'
+                    ',lo_sucursal,'
 					AND serv.alcance = 1
-					AND serv.id_producto = 1
+					-- AND serv.id_producto = 1
                     AND fac.estatus != 2
                     AND fac.tipo_cfdi = ''E''
 					AND vuelos.clave_linea_aerea IS NOT NULL');
@@ -163,7 +176,7 @@ BEGIN
 	PREPARE stmt FROM @query2_egr;
 	EXECUTE stmt;
 
-    SET lo_suma_bolnal = (@lo_suma_bolnal_ing - @lo_suma_bolnal_egr);
+    SET lo_suma_bolnal = (IFNULL(@lo_suma_bolnal_ing, 0) - IFNULL(@lo_suma_bolnal_egr, 0));
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -185,9 +198,9 @@ BEGIN
 					det.id_servicio = serv.id_servicio
 				WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 				AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                AND fac.id_sucursal = ',pr_id_sucursal,'
+                ',lo_sucursal,'
 				AND serv.alcance = 2
-				AND serv.id_producto = 1
+				-- AND serv.id_producto = 1
                 AND fac.estatus != 2
                 AND fac.tipo_cfdi = ''I''
 				AND vuelos.clave_linea_aerea IS NOT NULL');
@@ -212,9 +225,9 @@ BEGIN
 					det.id_servicio = serv.id_servicio
 				WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 				AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                AND fac.id_sucursal = ',pr_id_sucursal,'
+                ',lo_sucursal,'
 				AND serv.alcance = 2
-				AND serv.id_producto = 1
+				-- AND serv.id_producto = 1
                 AND fac.estatus != 2
                 AND fac.tipo_cfdi = ''E''
 				AND vuelos.clave_linea_aerea IS NOT NULL');
@@ -223,7 +236,7 @@ BEGIN
 	PREPARE stmt FROM @query3_egr;
 	EXECUTE stmt;
 
-    SET lo_suma_bolint = (@lo_suma_bolint_ing - @lo_suma_bolint_egr);
+    SET lo_suma_bolint = (IFNULL(@lo_suma_bolint_ing, 0) - IFNULL(@lo_suma_bolint_egr, 0));
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -245,7 +258,7 @@ BEGIN
 					det.id_servicio = serv.id_servicio
 				WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 				AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                AND fac.id_sucursal = ',pr_id_sucursal,'
+                ',lo_sucursal,'
 				AND serv.id_producto = 1
                 AND fac.estatus != 2');
 

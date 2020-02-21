@@ -26,7 +26,7 @@ BEGIN
 		SET pr_message = 'ERROR store sp_fac_cliente_b';
 	END ;
 
-	IF (pr_consulta_gral !='' ) THEN
+	IF (pr_consulta_gral != '' ) THEN
 		SET lo_consulta_gral = CONCAT('
 					AND (cli.cve_cliente LIKE 		"%', pr_consulta_gral, '%"
 					OR cli.razon_social LIKE 		"%', pr_consulta_gral, '%"
@@ -57,8 +57,8 @@ BEGIN
 							cli.tipo_persona,
 							cli.nombre_comercial,
 							cli.tipo_cliente,
-							(SELECT CASE WHEN cli.telefono = "null" THEN "" ELSE cli.telefono END) telefono,
-							(SELECT CASE WHEN cli.email= "null" THEN "" ELSE cli.email END) email,
+							IFNULL(cli.telefono, '''') telefono,
+							IFNULL(cli.email, '''') email,
 							cli.cve_gds,
 							cli.datos_adicionales,
 							cli.cuenta_pagos_fe,
@@ -73,29 +73,30 @@ BEGIN
 							cli.limite_credito,
 							cli.saldo,
 							cli.estatus,
-                            cli.complemento_ine,
+							cli.complemento_ine,
 							dir.cve_pais,
 							dir.calle,
 							dir.num_exterior,
-							(SELECT CASE WHEN dir.num_interior= "null" THEN "" ELSE dir.num_interior END) num_interior,
+							IFNULL(dir.num_interior, '''') num_interior,
 							dir.colonia, municipio,
 							dir.ciudad,
 							dir.estado,
 							dir.codigo_postal,
 							cli.fecha_mod,
-							concat(usuario.nombre_usuario," ",
-							usuario.paterno_usuario) usuario_mod
+							CONCAT(usuario.nombre_usuario,'' '',usuario.paterno_usuario) usuario_mod
 						FROM ic_cat_tr_cliente cli
-						INNER JOIN suite_mig_conf.st_adm_tr_usuario usuario
-							ON usuario.id_usuario=cli.id_usuario
-						LEFT JOIN ct_glob_tc_direccion dir
-							ON dir.id_direccion= cli.id_direccion
+						INNER JOIN suite_mig_conf.st_adm_tr_usuario usuario ON
+							usuario.id_usuario=cli.id_usuario
+						LEFT JOIN ct_glob_tc_direccion dir ON
+							dir.id_direccion= cli.id_direccion
 						WHERE cli.id_grupo_empresa = ? '
 							,lo_first_select
 							,lo_consulta_gral
 							,lo_order_by
 							,'LIMIT ?,?'
 							);
+
+	-- SELECT @query;
 	PREPARE stmt FROM @query;
 	SET @id_grupo_empresa = pr_id_grupo_empresa;
 	SET @ini = pr_ini_pag;

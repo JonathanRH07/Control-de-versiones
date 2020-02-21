@@ -1,9 +1,9 @@
 DELIMITER $$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_dash_cobranza_indicadores_c`(
-	IN  pr_id_grupo_empresa	INT,
-    IN	pr_id_sucursal		INT,
-    IN	pr_moneda_reporte	INT,
-    OUT pr_message 			TEXT
+	IN  pr_id_grupo_empresa					INT,
+    IN	pr_id_sucursal						INT,
+    IN	pr_moneda_reporte					INT,
+    OUT pr_message 							TEXT
 )
 BEGIN
 /*
@@ -13,11 +13,12 @@ BEGIN
 	@autor : 		David Roldan Solares
 	@cambios:
 */
-	DECLARE lo_pendxcobrar 		DECIMAL(18,2);
-    DECLARE lo_total_atrasado 	DECIMAL(18,2);
-    DECLARE lo_porc_atrasado	DECIMAL(6,2);
-    DECLARE lo_total_cobrado 	DECIMAL(18,2);
-    DECLARE lo_moneda_reporte   VARCHAR(100);
+	DECLARE lo_pendxcobrar 					DECIMAL(18,2);
+    DECLARE lo_total_atrasado 				DECIMAL(18,2);
+    DECLARE lo_porc_atrasado				DECIMAL(6,2);
+    DECLARE lo_total_cobrado 				DECIMAL(18,2);
+    DECLARE lo_moneda_reporte   			VARCHAR(100);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -32,6 +33,19 @@ BEGIN
 		SET lo_moneda_reporte = '';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
 	/* Pendiente por cobrar ************************************************/
 
     SET @lo_pendxcobrar = 0;
@@ -44,7 +58,7 @@ BEGIN
 							FROM antiguedad_saldos
 							WHERE estatus = ''ACTIVO''
 							AND id_grupo_empresa = ',pr_id_grupo_empresa,'
-							AND id_sucursal = ',pr_id_sucursal,'
+							',lo_sucursal,'
 							AND saldo_facturado != 0
 							AND fecha_emision < SYSDATE()');
 
@@ -66,7 +80,7 @@ BEGIN
 									FROM antiguedad_saldos
 									WHERE estatus = ''ACTIVO''
 									AND id_grupo_empresa = ',pr_id_grupo_empresa,'
-									AND id_sucursal = ',pr_id_sucursal,'
+									',lo_sucursal,'
 									AND saldo_facturado != 0
 									AND fecha_vencimiento <= NOW()');
 
@@ -97,7 +111,7 @@ BEGIN
 								JOIN ic_glob_tr_cxc_detalle detalle ON
 									cxc.id_cxc  = detalle.id_cxc
 								WHERE cxc.id_grupo_empresa = ',pr_id_grupo_empresa,'
-								AND cxc.id_sucursal = ',pr_id_sucursal,'
+								',lo_sucursal,'
 								AND detalle.estatus = ''ACTIVO''
 								AND detalle.id_factura IS NULL
 								AND cxc.estatus = ''ACTIVO''

@@ -1,9 +1,9 @@
 DELIMITER $$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_dash_ventas_indicadores_c`(
-	IN	pr_id_grupo_empresa				INT,
-    IN	pr_id_sucursal					INT,
-    IN  pr_moneda_reporte				INT,
-    OUT pr_message						VARCHAR(500)
+	IN	pr_id_grupo_empresa					INT,
+    IN	pr_id_sucursal						INT,
+    IN  pr_moneda_reporte					INT,
+    OUT pr_message							VARCHAR(500)
 )
 BEGIN
 /*
@@ -14,15 +14,17 @@ BEGIN
 	@cambios:
 */
 
-	DECLARE lo_moneda					VARCHAR(100);
-    DECLARE lo_moneda2					VARCHAR(100) DEFAULT '';
-    DECLARE lo_moneda3					VARCHAR(100) DEFAULT '';
-    DECLARE lo_monto_total_ventas		DECIMAL(18,2) DEFAULT 0;
-    DECLARE lo_meta_ventas_totales		DECIMAL(18,2) DEFAULT 0;
-    DECLARE lo_comision_neta_ing		DECIMAL(18,2) DEFAULT 0;
-    DECLARE lo_comision_neta_egr		DECIMAL(18,2) DEFAULT 0;
-    DECLARE lo_comision_neta			DECIMAL(18,2) DEFAULT 0;
-    DECLARE lo_importe_cobrado			DECIMAL(18,2) DEFAULT 0;
+	DECLARE lo_moneda						VARCHAR(100);
+    DECLARE lo_moneda2						VARCHAR(100) DEFAULT '';
+    DECLARE lo_moneda3						VARCHAR(100) DEFAULT '';
+    DECLARE lo_monto_total_ventas			DECIMAL(18,2) DEFAULT 0;
+    DECLARE lo_meta_ventas_totales			DECIMAL(18,2) DEFAULT 0;
+    DECLARE lo_comision_neta_ing			DECIMAL(18,2) DEFAULT 0;
+    DECLARE lo_comision_neta_egr			DECIMAL(18,2) DEFAULT 0;
+    DECLARE lo_comision_neta				DECIMAL(18,2) DEFAULT 0;
+    DECLARE lo_importe_cobrado				DECIMAL(18,2) DEFAULT 0;
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
+    DECLARE lo_sucursal2					VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -42,6 +44,22 @@ BEGIN
 		SET lo_moneda = 'SUM(venta_neta_moneda_base)';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
+        SET lo_sucursal2 = CONCAT('AND cxc.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
     SET @query_moneda = CONCAT(
 				'
 				SELECT
@@ -57,6 +75,7 @@ BEGIN
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 	/* ~~~~~~~~~~~~~~~~~~~~ MONTO TOTAL DE VENTAS ~~~~~~~~~~~~~~~~~~~~ */
 
@@ -72,7 +91,7 @@ BEGIN
 						JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
 						WHERE id_grupo_empresa =  ',pr_id_grupo_empresa,'
-						AND id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
                         AND fac.estatus != 2
                         AND tipo_cfdi = ''I''
 						AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')'
@@ -95,7 +114,7 @@ BEGIN
 						JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
 						WHERE id_grupo_empresa =  ',pr_id_grupo_empresa,'
-						AND id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
                         AND fac.estatus != 2
                         AND tipo_cfdi = ''E''
 						AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')'
@@ -137,7 +156,7 @@ BEGIN
 						JOIN ic_fac_tr_factura_detalle fac_det ON
 							fac.id_factura = fac_det.id_factura
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                        AND fac.id_sucursal = ',pr_id_sucursal,'
+                        ',lo_sucursal,'
                         AND fac.estatus != 2
 						AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') >= DATE_FORMAT(NOW(), ''%Y-%m'')
 						AND fac.tipo_cfdi =  ''I'''
@@ -162,7 +181,7 @@ BEGIN
 						JOIN ic_fac_tr_factura_detalle fac_det ON
 							fac.id_factura = fac_det.id_factura
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                        AND fac.id_sucursal = ',pr_id_sucursal,'
+                        ',lo_sucursal,'
                         AND fac.estatus != 2
 						AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') >= DATE_FORMAT(NOW(), ''%Y-%m'')
 						AND fac.tipo_cfdi =  ''E''');
@@ -192,7 +211,7 @@ BEGIN
 					AND detalle.estatus = ''ACTIVO''
 					AND cxc.estatus = ''ACTIVO''
 					AND detalle.id_factura IS NULL
-					AND cxc.id_sucursal = ',pr_id_sucursal
+					',lo_sucursal2
 						);
 
     -- SELECT @querycxc;

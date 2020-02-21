@@ -18,6 +18,7 @@ BEGIN
 */
 
 	DECLARE lo_moneda_reporte				VARCHAR(255);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -31,6 +32,19 @@ BEGIN
 		SET lo_moneda_reporte = '/tipo_cambio_eur';
 	ELSE
 		SET lo_moneda_reporte = '';
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -68,8 +82,8 @@ BEGIN
 						vuelos.clave_linea_aerea = airline.clave_aerolinea
 					WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                    AND fac.id_sucursal = ',pr_id_sucursal,'
-					AND serv.id_producto = 1
+                    ',lo_sucursal,'
+					-- AND serv.id_producto = 1
 					AND prov.id_tipo_proveedor = 2
 					AND fac.estatus != 2
 					AND fac.tipo_cfdi = ''I''
@@ -101,8 +115,8 @@ BEGIN
 						vuelos.clave_linea_aerea = airline.clave_aerolinea
 					WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                    AND fac.id_sucursal = ',pr_id_sucursal,'
-					AND serv.id_producto = 1
+                    ',lo_sucursal,'
+					-- AND serv.id_producto = 1
 					AND prov.id_tipo_proveedor = 1
 					AND fac.estatus != 2
 					AND fac.tipo_cfdi = ''I''
@@ -134,8 +148,8 @@ BEGIN
 						vuelos.clave_linea_aerea = airline.clave_aerolinea
 					WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                    AND fac.id_sucursal = ',pr_id_sucursal,'
-					AND serv.id_producto = 1
+                    ',lo_sucursal,'
+					-- AND serv.id_producto = 1
 					AND prov.id_tipo_proveedor = 3
 					AND fac.estatus != 2
 					AND fac.tipo_cfdi = ''I''
@@ -179,8 +193,8 @@ BEGIN
 						vuelos.clave_linea_aerea = airline.clave_aerolinea
 					WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                    AND fac.id_sucursal = ',pr_id_sucursal,'
-					AND serv.id_producto = 1
+                    ',lo_sucursal,'
+					-- AND serv.id_producto = 1
 					AND prov.id_tipo_proveedor = 2
 					AND fac.estatus != 2
 					AND fac.tipo_cfdi = ''E''
@@ -212,8 +226,8 @@ BEGIN
 						vuelos.clave_linea_aerea = airline.clave_aerolinea
 					WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                    AND fac.id_sucursal = ',pr_id_sucursal,'
-					AND serv.id_producto = 1
+                    ',lo_sucursal,'
+					-- AND serv.id_producto = 1
 					AND prov.id_tipo_proveedor = 1
 					AND fac.estatus != 2
 					AND fac.tipo_cfdi = ''E''
@@ -245,8 +259,8 @@ BEGIN
 						vuelos.clave_linea_aerea = airline.clave_aerolinea
 					WHERE DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                    AND fac.id_sucursal = ',pr_id_sucursal,'
-					AND serv.id_producto = 1
+                    ',lo_sucursal,'
+					-- AND serv.id_producto = 1
 					AND prov.id_tipo_proveedor = 3
 					AND fac.estatus != 2
 					AND fac.tipo_cfdi = ''E''

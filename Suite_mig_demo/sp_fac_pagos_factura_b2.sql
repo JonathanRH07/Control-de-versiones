@@ -136,7 +136,8 @@ BEGIN
 								cxc.saldo_moneda_base as orderc,
 								cxc.estatus,
 								cxc.uuid,
-								cxc.id_cxc
+								cxc.id_cxc,
+                                cxc.tipo_cambio
 							FROM ic_glob_tr_cxc cxc
 							JOIN ic_cat_tr_sucursal suc ON
 								cxc.id_sucursal = suc.id_sucursal

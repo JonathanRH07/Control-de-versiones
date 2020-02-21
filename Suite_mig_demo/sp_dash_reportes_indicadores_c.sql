@@ -23,6 +23,7 @@ BEGIN
     DECLARE lo_pendxcobrar				DECIMAL(15,2);
 	DECLARE lo_no_transacciones			INT;
     DECLARE lo_importe					DECIMAL(15,2);
+    DECLARE lo_sucursal					VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -40,6 +41,19 @@ BEGIN
 		SET lo_moneda = '';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
 	/* ~~~~~~~~~~~~~~~~~~~~ MONTO TOTAL DE VENTAS ~~~~~~~~~~~~~~~~~~~~ */
     SET @lo_monto_total_ventas_ing = 0;
     SET @querymonto_ing = CONCAT(
@@ -52,7 +66,7 @@ BEGIN
 						JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND fac.estatus != 2
 						AND fac.tipo_cfdi = ''I''
 						AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
@@ -73,7 +87,7 @@ BEGIN
 						JOIN ic_fac_tr_factura_detalle det ON
 							fac.id_factura = det.id_factura
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND fac.estatus != 2
 						AND fac.tipo_cfdi = ''E''
 						AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
@@ -101,7 +115,7 @@ BEGIN
 						JOIN ic_fac_tr_factura_detalle fac_det ON
 							fac.id_factura = fac_det.id_factura
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                        AND fac.id_sucursal = ',pr_id_sucursal,'
+                        ',lo_sucursal,'
                         AND fac.estatus != 2
 						AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') >=  DATE_FORMAT(NOW(), ''%Y-%m'')
 						AND fac.tipo_cfdi =  ''I'''
@@ -126,7 +140,7 @@ BEGIN
 						JOIN ic_fac_tr_factura_detalle fac_det ON
 							fac.id_factura = fac_det.id_factura
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-                        AND fac.id_sucursal = ',pr_id_sucursal,'
+                        ',lo_sucursal,'
                         AND fac.estatus != 2
 						AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') >= DATE_FORMAT(NOW(), ''%Y-%m'')
 						AND fac.tipo_cfdi =  ''E''');
@@ -153,7 +167,7 @@ BEGIN
 						FROM antiguedad_saldos
 						WHERE estatus = 1
 						AND id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND saldo_facturado != 0
 						AND fecha_emision < NOW()');
 
@@ -181,7 +195,7 @@ BEGIN
 						JOIN ic_fac_tr_compras_x_servicio tar ON
 							fac.id_factura = tar.id_factura
 						WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-						AND fac.id_sucursal = ',pr_id_sucursal,'
+						',lo_sucursal,'
 						AND fac.estatus != 2
 						AND id_tc_corporativa != 0
 						AND DATE_FORMAT(fac.fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')');

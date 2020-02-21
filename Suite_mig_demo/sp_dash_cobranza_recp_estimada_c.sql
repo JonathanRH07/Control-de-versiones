@@ -19,6 +19,7 @@ BEGIN
 
 	DECLARE lo_recuperacion					TEXT;
     DECLARE lo_porc_recup					TEXT;
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -37,6 +38,19 @@ BEGIN
 		SET lo_recuperacion = 'SUM(saldo_facturado)';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     DROP TABLE IF EXISTS tmp_recuperacion;
@@ -51,7 +65,7 @@ BEGIN
 						',lo_recuperacion,' recuperacion
 					FROM antiguedad_saldos
 					WHERE id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND estatus = ''ACTIVO''
 					AND saldo_facturado <> 0
 					AND DATE_FORMAT(fecha_vencimiento, ''%Y-%m-%d'') >= DATE_FORMAT(NOW(), ''%Y-%m-%d'')

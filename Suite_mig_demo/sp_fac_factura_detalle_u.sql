@@ -61,7 +61,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_fac_factura_detalle_u`(
     OUT pr_message 	   						VARCHAR(500))
 BEGIN
 	/*
-		@nombre 	: sp_fac_factura_detalle_u 
+		@nombre 	: sp_fac_factura_detalle_u
 		@fecha 		: 03/03/2017
 		@descripcion: SP para actualizar registros en el modulo de facturacion.
 		@autor 		: Griselda Medina Medina
@@ -192,11 +192,11 @@ BEGIN
 		SET lo_tarifa_moneda_facturada = CONCAT(' tarifa_moneda_facturada = "', pr_tarifa_moneda_facturada, '",');
 	END IF;
 
-    IF pr_comision_agencia > 0 THEN
+    IF pr_comision_agencia IS NOT NULL THEN
 		SET lo_comision_agencia = CONCAT(' comision_agencia = ', pr_comision_agencia, ',');
 	END IF;
 
-    IF pr_porc_comision_agencia > 0 THEN
+    IF pr_porc_comision_agencia IS NOT NULL THEN
 		SET lo_porc_comision_agencia = CONCAT(' porc_comision_agencia = ', pr_porc_comision_agencia, ',');
 	END IF;
 

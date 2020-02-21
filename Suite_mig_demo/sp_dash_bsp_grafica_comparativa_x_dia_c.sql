@@ -14,6 +14,7 @@ BEGIN
 	@cambios:
 */
 	DECLARE lo_moneda_reporte				VARCHAR(255);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -27,6 +28,19 @@ BEGIN
 		SET lo_moneda_reporte = '/tipo_cambio_eur';
 	ELSE
 		SET lo_moneda_reporte = '';
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
     END IF;
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -62,7 +76,7 @@ BEGIN
 								JOIN ic_cat_tc_servicio serv ON
 									det.id_servicio = serv.id_servicio
 								WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-								AND fac.id_sucursal = ',pr_id_sucursal,'
+								',lo_sucursal,'
 								AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 								AND serv.alcance = 1
 								AND serv.id_producto = 1
@@ -90,7 +104,7 @@ BEGIN
 								JOIN ic_cat_tc_servicio serv ON
 									det.id_servicio = serv.id_servicio
 								WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-								AND fac.id_sucursal = ',pr_id_sucursal,'
+								',lo_sucursal,'
 								-- AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 								AND serv.alcance = 1
 								AND serv.id_producto = 1
@@ -168,7 +182,7 @@ BEGIN
 								JOIN ic_cat_tc_servicio serv ON
 									det.id_servicio = serv.id_servicio
 								WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-								AND fac.id_sucursal = ',pr_id_sucursal,'
+								',lo_sucursal,'
 								AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 								AND serv.alcance = 2
 								AND serv.id_producto = 1
@@ -196,7 +210,7 @@ BEGIN
 								JOIN ic_cat_tc_servicio serv ON
 									det.id_servicio = serv.id_servicio
 								WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-								AND fac.id_sucursal = ',pr_id_sucursal,'
+								',lo_sucursal,'
 								AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 								AND serv.alcance = 2
 								AND serv.id_producto = 1

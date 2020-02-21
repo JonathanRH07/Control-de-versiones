@@ -1,5 +1,5 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_sucursal_i`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_cat_sucursal_i`(
 	IN  pr_id_grupo_empresa     	INT(11),
 	IN	 pr_id_usuario				INT(11),
 	IN	 pr_pertenece				INT(11),
@@ -20,7 +20,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_sucursal_i`(
 )
 BEGIN
 	/*
-		@nombre 		: sp_cat_sucursal_i 
+		@nombre 		: sp_cat_sucursal_i
 		@fecha 			: 22/12/2016
 		@descripcion 	: SP para insertar registro de catalogo Sucursales.
 		@autor 			: Griselda Medina Medina
@@ -38,6 +38,7 @@ BEGIN
 	BEGIN
 		SET pr_message = 'SUCURSAL.MESSAGE_ERROR_CREATE_SUCURSALES';
 		SET pr_affect_rows = 0;
+        SET pr_inserted_id = 0;
         CALL sp_glob_direccion2_d(pr_id_direccion);
 		ROLLBACK;
 	END;
@@ -122,10 +123,18 @@ BEGIN
 		);
 		SET pr_inserted_id 	= @@identity;
 
-		SELECT ROW_COUNT() INTO pr_affect_rows FROM dual;
+        SELECT id_usuario into @id_superusuario FROM suite_mig_conf.st_adm_tr_usuario
+        WHERE id_grupo_empresa = pr_id_grupo_empresa AND estatus_usuario = 'ACTIVO' AND id_role = 1 LIMIT 1;
+
+        IF @id_superusuario > 0 THEN
+			CALL suite_mig_conf.sp_usuario_sucursal_i(@id_superusuario,pr_inserted_id,pr_id_usuario, @pr_inserted_id, @pr_affect_rows, @pr_message);
+        END IF;
+
+        SELECT ROW_COUNT() INTO pr_affect_rows FROM dual;
 
         # Mensaje de ejecución.
 		SET pr_message = 'SUCCESS';
+
 		COMMIT;
       END IF;
     END IF;

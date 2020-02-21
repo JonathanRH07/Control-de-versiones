@@ -4,8 +4,13 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_gds_configuracion_u`(
 	IN  pr_id_grupo_empresa 		int(11),
 	IN  pr_id_moneda_nac 			int(11),
     IN  pr_id_moneda_int 			int(11),
-    IN  pr_id_tipser_bolint 		int(11),
     IN  pr_id_tipser_bolnac 		int(11),
+    IN  pr_id_tipser_bolint 		int(11),
+    IN  pr_id_moneda_lowcost_nac 	int(11),
+    IN  pr_id_moneda_lowcost_int 	int(11),
+    IN  pr_id_tipser_lowcost 		int(11),
+    IN  pr_id_tipser_lowcost_int 	int(11),
+    IN  pr_boleto_lowcost_inicial 	VARCHAR(10),
     IN  pr_lencli 					int(11),
     IN  pr_finpnr 					int(11),
     IN  pr_dec_lowcost 				char(1),
@@ -19,21 +24,27 @@ BEGIN
 	@fecha: 		30/08/2018
 	@descripcion: 	SP para actualizar en ic_gds_tr_configuracion
 	@autor: 		Yazbek Kido
+
 	@cambios:
 */
-	DECLARE  lo_id_moneda_nac 		VARCHAR(200) DEFAULT '';
-    DECLARE  lo_id_moneda_int 		VARCHAR(200) DEFAULT '';
-    DECLARE  lo_id_tipser_bolint	VARCHAR(200) DEFAULT '';
-    DECLARE  lo_id_tipser_bolnac 	VARCHAR(200) DEFAULT '';
-    DECLARE  lo_lencli 				VARCHAR(200) DEFAULT '';
-    DECLARE  lo_finpnr 				VARCHAR(200) DEFAULT '';
-    DECLARE  lo_dec_lowcost			VARCHAR(200) DEFAULT '';
-    DECLARE  lo_separa				VARCHAR(200) DEFAULT '';
+	DECLARE  lo_id_moneda_nac 			VARCHAR(200) DEFAULT '';
+    DECLARE  lo_id_moneda_int 			VARCHAR(200) DEFAULT '';
+    DECLARE  lo_id_tipser_bolint		VARCHAR(200) DEFAULT '';
+    DECLARE  lo_id_tipser_bolnac 		VARCHAR(200) DEFAULT '';
+    DECLARE  lo_id_moneda_lowcost_nac	VARCHAR(200) DEFAULT '';
+    DECLARE  lo_id_moneda_lowcost_int 	VARCHAR(200) DEFAULT '';
+    DECLARE  lo_id_tipser_lowcost		VARCHAR(200) DEFAULT '';
+    DECLARE  lo_id_tipser_lowcost_int	VARCHAR(200) DEFAULT '';
+    DECLARE  lo_boleto_lowcost_inicial 	VARCHAR(200) DEFAULT '';
+    DECLARE  lo_lencli 					VARCHAR(200) DEFAULT '';
+    DECLARE  lo_finpnr 					VARCHAR(200) DEFAULT '';
+    DECLARE  lo_dec_lowcost				VARCHAR(200) DEFAULT '';
+    DECLARE  lo_separa					VARCHAR(200) DEFAULT '';
 
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
-		SET pr_message = 'ERROR store sp_gds_configuracion_u';
+		SET pr_message = 'INTERFASES_OTHERS.MESSAGE_ERROR_UPDATE_OTHERS';
         SET pr_affect_rows = 0;
 		ROLLBACK;
 	END;
@@ -57,6 +68,26 @@ BEGIN
 		SET lo_id_tipser_bolnac = CONCAT('id_tipser_bolnac =  ', pr_id_tipser_bolnac, ', ');
 	END IF;
 
+    IF pr_id_moneda_lowcost_nac > 0 THEN
+		SET lo_id_moneda_lowcost_nac = CONCAT('id_moneda_lowcost_nac =  ', pr_id_moneda_lowcost_nac, ', ');
+	END IF;
+
+    IF pr_id_moneda_lowcost_int > 0 THEN
+		SET lo_id_moneda_lowcost_int = CONCAT('id_moneda_lowcost_int =  ', pr_id_moneda_lowcost_int, ', ');
+	END IF;
+
+    IF pr_id_tipser_lowcost > 0 THEN
+		SET lo_id_tipser_lowcost = CONCAT('id_tipser_lowcost =  ', pr_id_tipser_lowcost, ', ');
+	END IF;
+
+    IF pr_id_tipser_lowcost_int > 0 THEN
+		SET lo_id_tipser_lowcost_int = CONCAT('id_tipser_lowcost_int =  ', pr_id_tipser_lowcost_int, ', ');
+	END IF;
+
+    IF pr_boleto_lowcost_inicial != '' THEN
+		SET lo_boleto_lowcost_inicial = CONCAT('boleto_lowcost_inicial =  "', pr_boleto_lowcost_inicial, '" , ');
+	END IF;
+
     IF pr_lencli > 0 THEN
 		SET lo_lencli = CONCAT('lencli =  ', pr_lencli, ', ');
 	END IF;
@@ -73,37 +104,56 @@ BEGIN
 		SET lo_separa = CONCAT('separa =  "\\', pr_separa, '", ');
 	END IF;
 
-	SET @query = CONCAT('UPDATE ic_gds_tr_configuracion
-							SET ',
-								lo_id_moneda_nac,
-								lo_id_moneda_int,
-                                lo_id_tipser_bolint,
-                                lo_id_tipser_bolnac,
-                                lo_lencli,
-                                lo_finpnr,
-                                lo_dec_lowcost,
-                                lo_separa,
-                                ' id_usuario=',pr_id_usuario,
-							' , fecha_mod  = sysdate()
-                             WHERE id_gds_configuracion = ',pr_id_gds_configuracion,
-                            ' AND id_grupo_empresa = ', pr_id_grupo_empresa, '');
--- Select @query;
-	PREPARE stmt
-	FROM @query;
+    SELECT COUNT(*) INTO @existe_boleto FROM  ic_gds_tr_configuracion
+		WHERE boleto_lowcost_inicial = pr_boleto_lowcost_inicial
+		AND id_gds_configuracion != pr_id_gds_configuracion
+		AND id_grupo_empresa = pr_id_grupo_empresa;
 
-	SET @id_gds_configuracion = pr_id_gds_configuracion;
-    SET @id_grupo_empresa = pr_id_grupo_empresa;
-	EXECUTE stmt;
-	#Devuelve el numero de registros afectados
-	SELECT
-		ROW_COUNT()
-	INTO
-		pr_affect_rows
-	FROM dual;
+    IF @existe_boleto > 0 THEN
+		SET pr_message = 'INTERFASES_OTHERS.MESSAGE_ERROR_UPDATE_DUPLICATE';
+		SET pr_affect_rows = 0;
+        ROLLBACK;
+    ELSE
+		SET @query = CONCAT('UPDATE ic_gds_tr_configuracion
+								SET ',
+									lo_id_moneda_nac,
+									lo_id_moneda_int,
+									lo_id_tipser_bolint,
+									lo_id_tipser_bolnac,
+									lo_id_moneda_lowcost_nac,
+									lo_id_moneda_lowcost_int,
+									lo_id_tipser_lowcost,
+									lo_id_tipser_lowcost_int,
+									lo_boleto_lowcost_inicial,
+									lo_lencli,
+									lo_finpnr,
+									lo_dec_lowcost,
+									lo_separa,
+									' id_usuario=',pr_id_usuario,
+								' , fecha_mod  = sysdate()
+								 WHERE id_gds_configuracion = ',pr_id_gds_configuracion,
+								' AND id_grupo_empresa = ', pr_id_grupo_empresa, '');
+	-- Select @query;
+		PREPARE stmt
+		FROM @query;
 
-	# Mensaje de ejecución.
-	SET pr_message = 'SUCCESS';
+		SET @id_gds_configuracion = pr_id_gds_configuracion;
+		SET @id_grupo_empresa = pr_id_grupo_empresa;
+		EXECUTE stmt;
+		#Devuelve el numero de registros afectados
+		SELECT
+			ROW_COUNT()
+		INTO
+			pr_affect_rows
+		FROM dual;
 
-	COMMIT;
+        # Mensaje de ejecución.
+		SET pr_message = 'SUCCESS';
+		COMMIT;
+    END IF;
+
+
+
+
 END$$
 DELIMITER ;

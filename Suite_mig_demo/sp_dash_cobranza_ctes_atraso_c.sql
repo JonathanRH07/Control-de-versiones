@@ -20,6 +20,7 @@ BEGIN
 	DECLARE lo_tot_cxc 						TEXT;
     DECLARE lo_tot_atraso					TEXT;
     DECLARE lo_poc_atraso					TEXT;
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -40,6 +41,19 @@ BEGIN
 		SET lo_tot_atraso = '';
     END IF;
 
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     DROP TABLE IF EXISTS tmp_clientes_atraso;
@@ -55,7 +69,7 @@ BEGIN
 					FROM antiguedad_saldos ant
 					WHERE ant.estatus = ''ACTIVO''
 					AND ant.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND ant.id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND saldo_facturado != 0
 					AND ant.fecha_emision <= NOW()
 					GROUP BY ant.id_cliente');

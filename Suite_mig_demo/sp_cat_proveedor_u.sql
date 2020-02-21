@@ -2,6 +2,7 @@ DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_proveedor_u`(
 	IN 	pr_id_grupo_empresa			INT(11),
 	IN  pr_id_proveedor				INT(11),
+    IN  pr_id_sucursal				INT(11),
     IN	pr_id_usuario				INT(11),
     IN	pr_id_tipo_proveedor 		INT(11),
     IN 	pr_tipo_proveedor_operacion ENUM('INGRESO','EGRESO','AMBOS'),
@@ -42,6 +43,7 @@ BEGIN
     DECLARE lo_concepto_pago			VARCHAR(1000) DEFAULT '';
     DECLARE lo_porcentaje_prorrateo		VARCHAR(1000) DEFAULT '';
     DECLARE	lo_estatus 					VARCHAR(1000) DEFAULT '';
+    DECLARE	lo_id_sucursal 				VARCHAR(1000) DEFAULT '';
 	DECLARE lo_inserted_id 	    		VARCHAR(200) DEFAULT '';
 	DECLARE lo_valida_dir 				INT;
 
@@ -62,12 +64,16 @@ BEGIN
      	pr_no_contab_comision,
         pr_estatus,
      	pr_id_usuario,
-		pr_affect_rows,
-		pr_message
+		@pr_affect_rows,
+		@pr_message
     );
 
     IF pr_id_tipo_proveedor > 0 THEN
 		SET lo_id_tipo_proveedor = CONCAT(' id_tipo_proveedor = ', pr_id_tipo_proveedor,',');
+	END IF;
+
+    IF pr_id_sucursal > 0 THEN
+		SET lo_id_sucursal = CONCAT(' id_sucursal = ', pr_id_sucursal,',');
 	END IF;
 
     IF pr_tipo_proveedor_operacion !='' THEN
@@ -117,6 +123,7 @@ BEGIN
 						lo_id_tipo_proveedor,
 						lo_tipo_proveedor_operacion,
 						lo_tipo_persona ,
+                        lo_id_sucursal,
 						lo_rfc,
 						lo_razon_social,
 						lo_nombre_comercial,

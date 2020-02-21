@@ -18,6 +18,7 @@ BEGIN
 */
 
 	DECLARE lo_moneda_reporte				VARCHAR(150);
+    DECLARE lo_sucursal						VARCHAR(200) DEFAULT '';
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -32,6 +33,21 @@ BEGIN
 	ELSE
 		SET lo_moneda_reporte = '';
     END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+    SELECT
+		matriz
+	INTO
+		@lo_es_matriz
+	FROM ic_cat_tr_sucursal
+	WHERE id_sucursal = pr_id_sucursal;
+
+    IF @lo_es_matriz = 0 THEN
+		SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
+    END IF;
+
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     DROP TABLE IF EXISTS tmp_ventas_x_proveedor_ing;
     DROP TABLE IF EXISTS tmp_ventas_x_proveedor_egr;
@@ -53,7 +69,7 @@ BEGIN
 					JOIN ic_cat_tr_proveedor prov ON
 						det.id_proveedor = prov.id_proveedor
 					WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND fac.id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.estatus != 2
                     AND fac.tipo_cfdi = ''I''
@@ -76,7 +92,7 @@ BEGIN
 					JOIN ic_cat_tr_proveedor prov ON
 						det.id_proveedor = prov.id_proveedor
 					WHERE fac.id_grupo_empresa = ',pr_id_grupo_empresa,'
-					AND fac.id_sucursal = ',pr_id_sucursal,'
+					',lo_sucursal,'
 					AND DATE_FORMAT(fecha_factura, ''%Y-%m'') = DATE_FORMAT(NOW(), ''%Y-%m'')
 					AND fac.estatus != 2
                     AND fac.tipo_cfdi = ''E''

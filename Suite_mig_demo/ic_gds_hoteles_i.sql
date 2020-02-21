@@ -26,7 +26,7 @@ BEGIN
 	@fecha: 		14/09/2017
 	@descripcion: 	SP para insertar en gds_autos
 	@autor: 		Griselda Medina Medina
-	@cambios: 		
+	@cambios:
 */
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
