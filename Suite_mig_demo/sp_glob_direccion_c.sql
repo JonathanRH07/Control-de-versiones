@@ -22,7 +22,7 @@ BEGIN
         cve_pais,
         calle,
         num_exterior,
-		(SELECT CASE WHEN num_interior = "null" THEN "" ELSE num_interior END) num_interior,
+        IFNULL(num_interior, '')num_interior,
         colonia,
         municipio,
         ciudad,

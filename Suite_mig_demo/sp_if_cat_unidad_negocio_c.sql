@@ -1,5 +1,5 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_if_cat_unidad_negocio_c`(IN  pr_id_grupo_empresa 	INT(11), 
+CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_if_cat_unidad_negocio_c`(IN  pr_id_grupo_empresa 	INT(11),
 	IN  pr_cve_unidad_negocio 	VARCHAR(10),
     IN  pr_id_unidad_negocio	INT(11),
     OUT pr_message 				VARCHAR(500))

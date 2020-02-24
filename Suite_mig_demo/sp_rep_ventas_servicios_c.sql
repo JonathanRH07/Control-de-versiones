@@ -1,5 +1,5 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_rep_ventas_servicios_c`(
+CREATE DEFINER=`root`@`%` PROCEDURE `sp_rep_ventas_proveedores_c`(
 	IN  pr_id_grupo_empresa						INT,
 	IN	pr_id_sucursal							INT,
     IN	pr_año									VARCHAR(4),
@@ -10,12 +10,13 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_rep_ventas_servicios_c`(
 )
 BEGIN
 /*
-	@nombre:		sp_rep_ventas_servicios_c
-	@fecha:			2018/11/27
-	@descripcion:	Sp para consultar las ventas por servicio por mes |REPOORTE VENTAS TOTALES|
-	@autor: 		David Roldan Solares
-	@
+	@nombre:		sp_rep_ventas_proveedores_c
+	@fecha:			26/11/2018
+	@descripcion:	Sp para consultar las ventas por proveedor |REPOORTE VENTAS TOTALES|
+	@autor: 		Jonathan Ramirez
+	@cambios:
 */
+
 	DECLARE lo_sucursal							TEXT DEFAULT '';
     DECLARE lo_fecha 							VARCHAR(7);
     DECLARE lo_count							INT;
@@ -26,20 +27,20 @@ BEGIN
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
-        SET pr_message = 'ERROR store sp_rep_ventas_servicios_c';
+        SET pr_message = 'ERROR store sp_rep_ventas_proveedores_c';
 	END ;
 
     /* Desarrollo */
     /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
-    DROP TABLE IF EXISTS tmp_servicio;
-    DROP TABLE IF EXISTS tmp_servicio_resto;
+    DROP TABLE IF EXISTS tmp_proveedor;
+    DROP TABLE IF EXISTS tmp_proveedor_resto;
 
     /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
     /* VALIDAR AÑO */
     IF pr_mes = '' THEN
-		SET lo_fecha = DATE_FORMAT(SYSDATE(),'%Y-%m');
+		SET lo_fecha = DATE_FORMAT(NOW(),'%Y-%m');
 	ELSE
 		SET lo_fecha = CONCAT(pr_año,'-',pr_mes);
     END IF;
@@ -53,7 +54,7 @@ BEGIN
 		SET pr_top = pr_top;
     END IF;
 
-	/* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
+    /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
     /* VALIDAR MONEDA DEL REPORTE */
     IF pr_id_moneda = 149 THEN
@@ -91,50 +92,50 @@ BEGIN
 
     /* ~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* */
 
-	SET @serviciosucur = CONCAT('
-						CREATE TEMPORARY TABLE tmp_servicio AS
+	SET @proveedorsuc = CONCAT('
+						CREATE TEMPORARY TABLE tmp_proveedor AS
 						SELECT
-							cli.id_servicio,
-							cve_servicio clave,
-							descripcion nombre,
+							cli.id_proveedor,
+							cve_proveedor clave,
+							nombre_comercial nombre,
 							IFNULL(',lo_moneda_reporte_ing,' ,0) venta_mes,
 							IFNULL(',lo_moneda_reporte_egr,' ,0) devolucion_mes,
 							IFNULL(',lo_moneda_reporte_neto,' ,0) venta_neta_mes,
 							IFNULL(',lo_moneda_reporte_acu,' ,0) acumulado
-						FROM ic_rep_tr_acumulado_servicio cli
+						FROM ic_rep_tr_acumulado_proveedor cli
 						WHERE id_grupo_empresa = ',pr_id_grupo_empresa,'
 						',lo_sucursal,'
 						AND fecha = ''',lo_fecha,'''
-						GROUP BY cli.id_servicio
+						GROUP BY cli.id_proveedor
 						ORDER BY venta_neta_mes DESC
 						LIMIT ',pr_top);
 
-	-- SELECT @serviciosucur;
-	PREPARE stmt FROM @serviciosucur;
+	-- SELECT @proveedorsuc;
+	PREPARE stmt FROM @proveedorsuc;
 	EXECUTE stmt;
 	DEALLOCATE PREPARE stmt;
 
 
-	SET @serviciosucur2 = CONCAT('
-						CREATE TEMPORARY TABLE tmp_servicio_resto AS
+	SET @proveedorsuc2 = CONCAT('
+						CREATE TEMPORARY TABLE tmp_proveedor_resto AS
 						SELECT
-							''id_servicio'' id_servicio,
+							''id_proveedor'' id_proveedor,
 							''Otros'' clave,
 							''Otros'' nombre,
 							IFNULL(',lo_moneda_reporte_ing,' ,0) venta_mes,
 							IFNULL(',lo_moneda_reporte_egr,' ,0) devolucion_mes,
 							IFNULL(',lo_moneda_reporte_neto,' ,0) venta_neta_mes,
 							IFNULL(',lo_moneda_reporte_acu,' ,0) acumulado
-						FROM ic_rep_tr_acumulado_servicio cli
+						FROM ic_rep_tr_acumulado_proveedor cli
 						WHERE id_grupo_empresa = ',pr_id_grupo_empresa,'
 						',lo_sucursal,'
 						AND fecha = ''',lo_fecha,'''
-						GROUP BY cli.id_servicio
+						GROUP BY cli.id_proveedor
 						ORDER BY venta_neta_mes DESC
 						LIMIT ',pr_top,',1000');
 
-	-- SELECT @serviciosucur2;
-	PREPARE stmt FROM @serviciosucur2;
+	-- SELECT @proveedorsuc2;
+	PREPARE stmt FROM @proveedorsuc2;
 	EXECUTE stmt;
 	DEALLOCATE PREPARE stmt;
 
@@ -142,17 +143,17 @@ BEGIN
 		COUNT(*)
 	INTO
 		lo_count
-	FROM tmp_servicio_resto;
+	FROM tmp_proveedor_resto;
 
 	IF lo_count > 0 THEN
 		SELECT *
-		FROM tmp_servicio
+		FROM tmp_proveedor
 		UNION
-		SELECT id_servicio, clave, nombre, SUM(venta_mes), SUM(devolucion_mes), SUM(venta_neta_mes), acumulado
-		FROM tmp_servicio_resto;
+		SELECT id_proveedor, clave, nombre, SUM(venta_mes), SUM(devolucion_mes), SUM(venta_neta_mes), acumulado
+		FROM tmp_proveedor_resto;
 	ELSE
 		SELECT *
-		FROM tmp_servicio;
+		FROM tmp_proveedor;
 	END IF;
 
 	SET pr_message = 'SUCCESS';

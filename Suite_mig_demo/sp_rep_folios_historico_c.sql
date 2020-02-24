@@ -19,6 +19,33 @@ BEGIN
 
     /* ------------------------------------------------------- */
 
+	SELECT
+		id_folios,
+		fecha,
+		no_folios_comprados,
+		no_folios_acumulados
+	FROM(
+	SELECT
+		id_folios,
+		fecha,
+		no_folios_comprados no_folios_comprados,
+		no_folios_acumulados no_folios_acumulados
+	FROM ic_fac_tr_folios_historico
+	WHERE id_grupo_empresa = pr_id_grupo_empresa
+	AND metodo_pago = 'P'
+	UNION
+	SELECT
+		id_folios,
+		fecha,
+		no_folios_comprados no_folios_comprados,
+		no_folios_acumulados no_folios_acumulados
+	FROM ic_fac_tr_folios
+	WHERE id_grupo_empresa = pr_id_grupo_empresa
+	AND metodo_pago = 'P') a
+	GROUP BY fecha
+	ORDER BY fecha, no_folios_acumulados ASC;
+
+    /*
     SELECT
 		id_folios,
 		fecha,
@@ -37,6 +64,7 @@ BEGIN
 	WHERE id_grupo_empresa = pr_id_grupo_empresa
 	AND metodo_pago = 'P'
     ORDER BY fecha, no_folios_acumulados ASC;
+    */
 
     /* ------------------------------------------------------- */
 

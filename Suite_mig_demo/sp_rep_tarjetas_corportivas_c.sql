@@ -71,7 +71,7 @@ BEGIN
 						GROUP BY fac.id_factura
 						ORDER BY 1 ASC, 3 ASC, 4 ASC');
 
-	-- ELECT @query;
+	-- SELECT @query;
 	PREPARE stmt FROM @query;
 	EXECUTE stmt;
 	DEALLOCATE PREPARE stmt;

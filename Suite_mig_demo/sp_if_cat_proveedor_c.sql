@@ -4,6 +4,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_if_cat_proveedor_c`(
 	IN  pr_cve_proveedor		VARCHAR(10),
 	IN  pr_id_grupo_empresa 	INT,
 	IN  pr_codigo_bsp 			CHAR(10),
+    IN  pr_id_tipo_proveedor	INT,
     OUT pr_message 				VARCHAR(500))
 BEGIN
 	/*
@@ -19,31 +20,40 @@ BEGIN
         SET pr_message = 'ERROR store sp_if_cat_proveedor_c';
 	END ;
 
-    IF(pr_id_proveedor > 0 AND pr_id_grupo_empresa !='') THEN
+    IF(pr_id_proveedor > 0 AND pr_id_grupo_empresa > 0) THEN
 		SELECT
 			*
 		FROM ic_cat_tr_proveedor
 		WHERE id_proveedor=pr_id_proveedor
 			AND ic_cat_tr_proveedor.estatus = 'ACTIVO'
-			AND  ic_cat_tr_proveedor.id_grupo_empresa=pr_id_grupo_empresa ;
+			AND  ic_cat_tr_proveedor.id_grupo_empresa=pr_id_grupo_empresa;
 	END IF;
 
-    IF(pr_cve_proveedor !='' AND pr_id_grupo_empresa !='') THEN
+    IF(pr_id_tipo_proveedor > 0 AND pr_id_grupo_empresa > 0) THEN
 		SELECT
 			*
 		FROM ic_cat_tr_proveedor
-		INNER JOIN ct_glob_tc_direccion
+		WHERE id_tipo_proveedor=pr_id_tipo_proveedor
+			AND ic_cat_tr_proveedor.estatus = 'ACTIVO'
+			AND  ic_cat_tr_proveedor.id_grupo_empresa=pr_id_grupo_empresa;
+	END IF;
+
+    IF(pr_cve_proveedor !='' AND pr_id_grupo_empresa > 0) THEN
+		SELECT
+			*
+		FROM ic_cat_tr_proveedor
+		LEFT JOIN ct_glob_tc_direccion
 			ON ct_glob_tc_direccion.id_direccion=ic_cat_tr_proveedor.id_direccion
-		INNER JOIN ct_glob_tc_pais
+		LEFT JOIN ct_glob_tc_pais
 			ON ct_glob_tc_pais.cve_pais=ct_glob_tc_direccion.cve_pais
-		INNER JOIN ic_cat_tr_proveedor_conf
+		LEFT JOIN ic_cat_tr_proveedor_conf
 			ON ic_cat_tr_proveedor_conf.id_proveedor=ic_cat_tr_proveedor.id_proveedor
 		WHERE cve_proveedor=pr_cve_proveedor
 			AND ic_cat_tr_proveedor.estatus = 'ACTIVO'
 			AND  ic_cat_tr_proveedor.id_grupo_empresa=pr_id_grupo_empresa ;
 	END IF;
 
-    IF(pr_codigo_bsp !='' AND pr_id_grupo_empresa !='' ) THEN
+    IF(pr_codigo_bsp !='' AND pr_id_grupo_empresa > 0) THEN
 		SELECT
 			*
         FROM ic_cat_tr_proveedor

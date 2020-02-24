@@ -1,39 +1,29 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_if_prove_imp_serv_c`(
-	IN  pr_id_prove_servicio 	INT(11),
-    IN  pr_id_impuesto			INT(11),
+CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_if_prove_cta_ingreso_c`(
+	IN  pr_id_prove_servicio 	CHAR(10),
+	IN  pr_id_sucursal 			INT(11),
     OUT pr_message 				VARCHAR(500))
 BEGIN
 /*
-	@nombre:		sp_if_prove_imp_serv_c
-	@fecha: 		22/01/2018
-	@descripción: 	Sp para mostrar informacion de las tablas ic_fac_tr_prove_imp_serv y ic_cat_tr_impuesto
+	@nombre:		sp_if_prove_cta_ingreso_c
+	@fecha: 		24/01/2018
+	@descripción: 	Procedimiento que permite seleccionar todos los campos de la tabla ic_fac_tr_prove_cta_ingreso
 	@autor : 		Griselda Medina Medina.
 	@cambios:
 */
+
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
-        SET pr_message = 'ERROR store sp_if_prove_imp_serv_c';
+        SET pr_message = 'ERROR store sp_if_prove_cta_ingreso_c';
 	END ;
 
-	IF pr_id_prove_servicio > 0 AND pr_id_impuesto > 0 THEN
-		SELECT
-			*
-		FROM
-			ic_fac_tr_prove_imp_serv
-		INNER JOIN  ic_cat_tr_impuesto
-			ON ic_cat_tr_impuesto.id_impuesto=ic_fac_tr_prove_imp_serv.id_impuesto
-		WHERE id_prove_servicio = pr_id_prove_servicio
-		AND ic_fac_tr_prove_imp_serv.id_impuesto=pr_id_impuesto;
-	ELSEIF pr_id_prove_servicio > 0 THEN
-		SELECT
-			*
-		FROM
-			ic_fac_tr_prove_imp_serv
-		INNER JOIN  ic_cat_tr_impuesto
-			ON ic_cat_tr_impuesto.id_impuesto=ic_fac_tr_prove_imp_serv.id_impuesto
-		WHERE id_prove_servicio = pr_id_prove_servicio;
-	END IF;
+	SELECT
+		*
+	FROM
+		ic_fac_tr_prove_cta_ingreso
+	WHERE id_prove_servicio = pr_id_prove_servicio
+		AND id_sucursal=pr_id_sucursal;
+
 
 	SET pr_message 	   = 'SUCCESS';
 END$$

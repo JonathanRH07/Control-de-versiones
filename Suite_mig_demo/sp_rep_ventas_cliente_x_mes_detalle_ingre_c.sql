@@ -20,6 +20,7 @@ BEGIN
 	DECLARE lo_sucursal							VARCHAR(100) DEFAULT '';
 	DECLARE lo_moneda_reporte					TEXT;
 
+
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         SET pr_message = 'ERROR store sp_rep_ventas_cliente_x_mes_detalle_ingre_c';
@@ -57,7 +58,7 @@ BEGIN
 
     IF pr_id_sucursal > 0 THEN
 		IF @lo_es_matriz = 0 THEN
-			SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+			SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
 		END IF;
     END IF;
 

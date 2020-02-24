@@ -8,7 +8,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_glob_aerolinea_c`(
 	OUT	pr_message 					VARCHAR(500))
 BEGIN
 /*
-	@nombre: 		sp_glob_aerolinea_c	
+	@nombre: 		sp_glob_aerolinea_c
 	@fecha: 		20/02/2017
 	@descripcion: 	SP para consultar las aerolineas
 	@autor: 		Griselda Meidna Medina

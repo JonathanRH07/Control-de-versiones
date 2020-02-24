@@ -57,7 +57,7 @@ BEGIN
 
     IF pr_id_sucursal > 0 THEN
 		IF @lo_es_matriz = 0 THEN
-			SET lo_sucursal = CONCAT('AND id_sucursal = ',pr_id_sucursal,'');
+			SET lo_sucursal = CONCAT('AND fac.id_sucursal = ',pr_id_sucursal,'');
 		END IF;
     END IF;
 
@@ -97,7 +97,7 @@ BEGIN
 						GROUP BY det.id_factura_detalle;'
 						);
 
-	SELECT @query1;
+	-- SELECT @query1;
 	PREPARE stmt FROM @query1;
 	EXECUTE stmt;
     DEALLOCATE PREPARE stmt;

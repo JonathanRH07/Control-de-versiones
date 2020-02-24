@@ -12,7 +12,7 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_rep_anticipos_cfdi_c`(
 )
 BEGIN
 /*
-	@nombre:		sp_rep_anticipos_cfdi_c 		
+	@nombre:		sp_rep_anticipos_cfdi_c
 	@fecha:			03/05/2019
 	@descripcion:	Sp para consultar el reporte de los anticipos en facturacion
 	@autor: 		Jonathan Ramirez

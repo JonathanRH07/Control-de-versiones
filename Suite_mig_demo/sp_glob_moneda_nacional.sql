@@ -1,5 +1,5 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_glob_moneda_nacional`( 
+CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_glob_moneda_nacional`(
 	IN  pr_id_grupo_empresa 	INT,
     OUT pr_message				VARCHAR(5000)
     )

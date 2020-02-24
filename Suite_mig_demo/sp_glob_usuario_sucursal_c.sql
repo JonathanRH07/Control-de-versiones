@@ -1,6 +1,7 @@
 DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_glob_usuario_sucursal_c`(
 	IN 	pr_id_usuario		INT,
+    IN  pr_id_empresa		INT,
     OUT pr_message 			VARCHAR(500))
 BEGIN
 /*
@@ -18,7 +19,6 @@ BEGIN
         SET pr_message = 'ERROR store sp_glob_usuario_sucursal_c';
 	END ;
 
-
     SELECT
 		DISTINCT(dba.nombre)
 	INTO
@@ -30,30 +30,64 @@ BEGIN
 		 emp.id_base_datos = dba.id_base_datos
 	WHERE usu.id_usuario = pr_id_usuario;
 
-	SET @query = CONCAT('SELECT
-							user_suc.id_usuario_sucursal,
-							user_suc.id_usuario,
-							user_suc.id_sucursal,
-							suc.cve_sucursal,
-							suc.nombre,
-							suc.tipo
-						FROM suite_mig_conf.st_adm_tr_usuario_sucursal user_suc
-						INNER JOIN ',lo_base_datos,'.ic_cat_tr_sucursal suc
-							ON suc.id_sucursal=user_suc.id_sucursal
-						INNER JOIN suite_mig_conf.st_adm_tr_usuario usu ON
-							user_suc.id_usuario = usu.id_usuario
-						INNER JOIN suite_mig_conf.st_adm_tr_grupo_empresa grup_empr ON
-							usu.id_grupo_empresa = grup_empr.id_grupo_empresa
-						INNER JOIN suite_mig_conf.st_adm_tr_empresa empr ON
-							grup_empr.id_empresa = empr.id_empresa
-						WHERE  user_suc.id_usuario = ',pr_id_usuario,'
-						AND suc.estatus="ACTIVO"');
+	SELECT
+		tipo_usuario
+	INTO
+		@lo_tipo_usuario
+	FROM suite_mig_conf.st_adm_tr_usuario
+	WHERE id_usuario = pr_id_usuario;
 
-	-- SELECT @query;
+    IF @lo_tipo_usuario = 1 THEN
+		SET @query = CONCAT('SELECT
+								user_suc.id_usuario_sucursal,
+								user_suc.id_usuario,
+								user_suc.id_sucursal,
+								suc.cve_sucursal,
+								suc.nombre,
+								suc.tipo
+							FROM suite_mig_conf.st_adm_tr_usuario_sucursal user_suc
+							INNER JOIN ',lo_base_datos,'.ic_cat_tr_sucursal suc
+								ON suc.id_sucursal=user_suc.id_sucursal
+							INNER JOIN suite_mig_conf.st_adm_tr_usuario usu ON
+								user_suc.id_usuario = usu.id_usuario
+							INNER JOIN suite_mig_conf.st_adm_tr_grupo_empresa grup_empr ON
+								usu.id_grupo_empresa = grup_empr.id_grupo_empresa
+							INNER JOIN suite_mig_conf.st_adm_tr_empresa empr ON
+								grup_empr.id_empresa = empr.id_empresa
+							WHERE user_suc.id_usuario = ',pr_id_usuario,'
+							AND grup_empr.id_empresa = ',pr_id_empresa,'
+							AND suc.estatus = 1');
 
-	PREPARE stmt FROM @query;
-	EXECUTE stmt;
-	DEALLOCATE PREPARE stmt;
+		-- SELECT @query;
+		PREPARE stmt FROM @query;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+	ELSE
+		SET @query = CONCAT('SELECT
+								user_suc.id_usuario_sucursal,
+								user_suc.id_usuario,
+								user_suc.id_sucursal,
+								suc.cve_sucursal,
+								suc.nombre,
+								suc.tipo
+							FROM suite_mig_conf.st_adm_tr_usuario_sucursal user_suc
+							INNER JOIN ',lo_base_datos,'.ic_cat_tr_sucursal suc
+								ON suc.id_sucursal=user_suc.id_sucursal
+							INNER JOIN suite_mig_conf.st_adm_tr_usuario usu ON
+								user_suc.id_usuario = usu.id_usuario
+							INNER JOIN suite_mig_conf.st_adm_tr_grupo_empresa grup_empr ON
+								usu.id_grupo_empresa = grup_empr.id_grupo_empresa
+							INNER JOIN suite_mig_conf.st_adm_tr_empresa empr ON
+								grup_empr.id_empresa = empr.id_empresa
+							WHERE grup_empr.id_empresa = ',pr_id_empresa,'
+							AND suc.estatus = 1
+                            GROUP BY suc.id_sucursal');
+
+		-- SELECT @query;
+		PREPARE stmt FROM @query;
+		EXECUTE stmt;
+		DEALLOCATE PREPARE stmt;
+	END IF;
 
     /*
     SELECT

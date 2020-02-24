@@ -3,7 +3,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_glob_banco_c`(
 	OUT	pr_message 					VARCHAR(500))
 BEGIN
 /*
-	@nombre: 		sp_glob_banco_c	
+	@nombre: 		sp_glob_banco_c
 	@fecha: 		20/02/2017
 	@descripcion: 	SP para consultar los bancos
 	@autor: 		Alan Olivares

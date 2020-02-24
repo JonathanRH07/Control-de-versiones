@@ -28,7 +28,7 @@ BEGIN
 
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
-		SET pr_message = 'ERROR store sp_rep_ventas_sucursal_c';
+		SET pr_message = 'ERROR store sp_rep_comisiones_prod_serv_c';
 	END;
 
     /* VALIDAR ESTATUS */

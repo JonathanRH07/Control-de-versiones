@@ -32,7 +32,8 @@ BEGIN
 			prov_serv.margen,
 			prov_serv.tipo_valor_margen,
             prod.cve_producto,
-            airline.nombre_aerolinea
+            airline.nombre_aerolinea,
+            airline.clave_aerolinea
 		FROM ic_fac_tr_prove_servicio prov_serv
 		INNER JOIN ic_cat_tc_servicio serv ON
 			serv.id_servicio = prov_serv.id_servicio
@@ -62,7 +63,8 @@ BEGIN
 			prov_serv.margen,
 			prov_serv.tipo_valor_margen,
             prod.cve_producto,
-            airline.nombre_aerolinea
+            airline.nombre_aerolinea,
+            airline.clave_aerolinea
 		FROM
 			ic_cat_tc_servicio serv
 		INNER JOIN  ic_fac_tr_prove_servicio prov_serv ON

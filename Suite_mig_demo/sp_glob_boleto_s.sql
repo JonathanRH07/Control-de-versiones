@@ -25,6 +25,13 @@ BEGIN
         SET pr_message = 'ERROR store sp_glob_boleto_s';
 	END ;
 
+    /* ------------------------------------------------------------------------------------------------------------------------------- */
+
+    DROP TABLE IF EXISTS tmp_boletos_activos;
+    DROP TABLE IF EXISTS tmp_boletos_facturados;
+
+	/* ------------------------------------------------------------------------------------------------------------------------------- */
+    /* VALIDACION DE SUCURSAL MATRIZ */
 	SELECT
 		matriz
 	INTO
@@ -36,34 +43,88 @@ BEGIN
 			SET lo_sucursal = CONCAT(' AND ((bol.id_sucursal = ',pr_id_sucursal,' AND consolidado = ''S'') OR (consolidado = ''C''))');
     END IF;
 
+    /* ------------------------------------------------------------------------------------------------------------------------------- */
+
+    /* VALIDACION PROVEEDOR */
     IF (pr_id_proveedor > 0) THEN
 		SET lo_proveedor = CONCAT(' AND bol.id_proveedor = ', pr_id_proveedor);
     END IF;
 
+	/* ------------------------------------------------------------------------------------------------------------------------------- */
+
+	/* ACTIVOS */
 	SET @query = CONCAT('
+						CREATE TEMPORARY TABLE tmp_boletos_activos
 						SELECT
 							bol.*
 						FROM ic_glob_tr_boleto bol
 						LEFT JOIN ic_glob_tr_inventario_boletos inv ON
 							bol.id_inventario = inv.id_inventario_boletos
-                            AND inv.estatus != ''INACTIVO''
 						WHERE bol.id_grupo_empresa = ?
 						',lo_proveedor,'
                         ',lo_sucursal,'
-						AND numero_bol LIKE ''%',pr_consulta,'%''
-						AND bol.estatus != "INACTIVO"
-                        AND	  (ruta			  != ''BOLETO EN CONJUNTO'' OR
-							   ruta 		  IS NULL)
+						AND numero_bol LIKE ''%',pr_consulta,'%''','
+						AND bol.estatus != 2
+                        AND (ruta != ''BOLETO EN CONJUNTO'' OR
+							ruta IS NULL)
+						AND inv.estatus != 2
+                        AND bol.estatus = 1
 						GROUP BY bol.id_boletos
 						ORDER BY CAST(numero_bol as unsigned) ASC
-						LIMIT 50 ;
+						LIMIT 10;
 					');
-    -- AND   id_factura_detalle IS NULL
+
+
     -- SELECT @query;
     PREPARE stmt FROM @query;
     SET @id_grupo_empresa = pr_id_grupo_empresa;
     EXECUTE stmt USING @id_grupo_empresa;
 	DEALLOCATE PREPARE stmt;
+
+    /* ------------------------------------------------------------------------------------------------------------------------------- */
+
+    /* FACTURAS */
+	SET @query2 = CONCAT('
+						CREATE TEMPORARY TABLE tmp_boletos_facturados
+						SELECT
+							bol.*
+						FROM ic_glob_tr_boleto bol
+						LEFT JOIN ic_glob_tr_inventario_boletos inv ON
+							bol.id_inventario = inv.id_inventario_boletos
+						WHERE bol.id_grupo_empresa = ?
+						',lo_proveedor,'
+                        ',lo_sucursal,'
+						AND numero_bol LIKE ''%',pr_consulta,'%''','
+						AND bol.estatus != 2
+                        AND (ruta != ''BOLETO EN CONJUNTO'' OR
+							ruta IS NULL)
+						AND inv.estatus != 2
+                        AND bol.estatus = 3
+						GROUP BY bol.id_boletos
+						ORDER BY CAST(numero_bol as unsigned) ASC
+						LIMIT 10;
+					');
+
+
+    -- SELECT @query2;
+    PREPARE stmt FROM @query2;
+    SET @id_grupo_empresa = pr_id_grupo_empresa;
+    EXECUTE stmt USING @id_grupo_empresa;
+	DEALLOCATE PREPARE stmt;
+
+    /* ------------------------------------------------------------------------------------------------------------------------------- */
+
+    SELECT
+		'activos',
+		a.*
+	FROM tmp_boletos_activos a
+	UNION
+	SELECT
+		'facturados',
+		b.*
+	FROM tmp_boletos_facturados b;
+
+    /* ------------------------------------------------------------------------------------------------------------------------------- */
 
 	SET pr_message 	   = 'SUCCESS';
 END$$
