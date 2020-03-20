@@ -1,5 +1,5 @@
 DELIMITER $$
-CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_notificaciones_old_c`( 
+CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_notificaciones_old_c`(
 	OUT pr_message				VARCHAR(500))
 BEGIN
 	/*

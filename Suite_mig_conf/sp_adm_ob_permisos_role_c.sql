@@ -18,7 +18,8 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	SELECT
 		sis.id_sistema,
 		sis.nom_sistema,
-		CONCAT(sis.nom_sistema,'\\Controller\\', con.nom_controlador, '\\', acp.nom_accion) resource
+        acp.id_tipo_permiso,
+		CONCAT(sis.nom_sistema,'\\Controller\\', con.nom_controlador, '\\', IFNULL(acp.nom_accion,'')) resource
 	FROM
 		suite_mig_conf.st_adm_tr_sistema sis
 	INNER JOIN suite_mig_conf.st_adm_tc_modulo mo

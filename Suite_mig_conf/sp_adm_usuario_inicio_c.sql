@@ -2,7 +2,6 @@ DELIMITER $$
 CREATE DEFINER=`root`@`%` PROCEDURE `sp_adm_usuario_inicio_c`(
     IN 	pr_usuario			VARCHAR(100),
     IN 	pr_password_usuario	VARCHAR(256),
-    -- IN	pr_tipo_acceso	ENUM('IP', 'MAC'),
     IN 	pr_acceso_ip		VARCHAR(100),
     IN	pr_tipo_usuario		INT,
 	OUT pr_message			VARCHAR(500)
@@ -38,6 +37,7 @@ BEGIN
     DECLARE lo_usuario_encontrado2		INT DEFAULT 0;
 	DECLARE lo_id_grupo_empresa2		INT;
 	DECLARE lo_id_usuario2				INT DEFAULT 0;
+    DECLARE lo_inicio_sesion2			INT;
     DECLARE lo_intentos_ingreso2		INT;
     DECLARE lo_fecha_desbloqueo2		DATETIME;
     DECLARE lo_primer_ingreso2			INT;
@@ -49,7 +49,6 @@ BEGIN
 
     DECLARE lo_id_usuario_primer		INT DEFAULT NULL;
     DECLARE	lo_correo					VARCHAR(100) DEFAULT NULL;
-    DECLARE lo_contador_acceso_ip		INT DEFAULT 0;
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -98,6 +97,7 @@ BEGIN
 			id_usuario,
 			usuario,
 			password_usuario,
+            inicio_sesion,
             intentos_ingreso,
             fecha_desbloqueo,
             estatus_usuario
@@ -107,6 +107,7 @@ BEGIN
 			lo_id_usuario2,
 			lo_usuario,
 			lo_password_usuario,
+            lo_inicio_sesion2,
 			lo_intentos_ingreso2,
 			lo_fecha_desbloqueo2,
             lo_estatus_usuario
@@ -143,29 +144,7 @@ BEGIN
 	AND inicio_sesion > 0;
 
     IF lo_usuario_encontrado > 0 THEN
-
-		/* OBTENER IP's DE ACCESO */
-		SET @lo_contador_acceso_ip = 0;
-		SET @queryips = CONCAT(
-						'
-						SELECT
-							IFNULL(COUNT(*),0)
-						INTO
-							@lo_contador_acceso_ip
-						FROM st_adm_tr_usuario_acceso
-						WHERE id_usuario = ',lo_id_usuario,'
-						AND id_empresa = ',lo_id_empresa,'
-						AND estatus_acceso = 1
-						AND acceso_por LIKE ''%',pr_acceso_ip,'%''
-						LIMIT 1');
-
-		-- SELECT @queryips;
-		PREPARE stmt FROM @queryips;
-		EXECUTE stmt;
-		DEALLOCATE PREPARE stmt;
-
-		SET lo_contador_acceso_ip = @lo_contador_acceso_ip ;
-
+        SELECT f_validacion_ip(lo_id_usuario, lo_id_empresa, pr_acceso_ip) INTO @lo_contador_acceso_ip;
 	END IF;
 
     /*
@@ -189,7 +168,7 @@ BEGIN
 		IF lo_usuario_encontrado > 0 AND lo_estatus_usuario = 'ACTIVO' THEN
 			/* VALIDAR LA SI TIENE ACCESO POR IP */
 			IF lo_acceso_ip > 0 THEN
-				IF lo_contador_acceso_ip > 0 THEN
+				IF @lo_contador_acceso_ip > 0 THEN
 					/* VALIDAR QUE EL USUARIO NO SEA NUEVO */
 					IF lo_primer_ingreso = 0 THEN
 						/* VALIDAMOS QUE NO TENGA RESTRINCION DE HORARIO */
@@ -427,7 +406,8 @@ BEGIN
 			END IF;
 
 		/* EN CASO DE CONTRASEÑA INCORRECTA  */
-		ELSEIF lo_usuario_encontrado = 0 AND lo_usuario_encontrado2 > 0 AND lo_estatus_usuario = 'ACTIVO' THEN
+		ELSEIF lo_usuario_encontrado = 0 AND lo_usuario_encontrado2 > 0 AND lo_estatus_usuario = 'ACTIVO' AND lo_inicio_sesion2 = 0 THEN
+
 
 			/* VALIDAMOS QUE EL USUARIO ESTE NO TENGA MAS DE 2 INTENTOS ERRONEOS DE INICIO DE SESION */
 			IF lo_intentos_ingreso2 = 0 THEN

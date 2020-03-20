@@ -49,6 +49,45 @@ BEGIN
         SET pr_affect_rows = 0;
 	END;
 
+	#Valores default de parametros
+
+    SET pr_id_pac 					= 4;
+    SET pr_series_electronica 		= 'N';
+    SET pr_validar_email_vendedor 	= 'S';
+	SET pr_asignar_impre_series_e 	= 'S';
+	SET pr_enviar_email_cancela 	= 'S';
+	SET pr_email_notificaciones 	= '';
+	SET pr_metodo_pago 				= 'PPD';
+	SET pr_uso_cfdi 				= 'G03';
+	SET pr_regimen_fiscal_sat 		= '601';
+    SET pr_enviar_factura 			= 'S';
+    SET pr_validar_campos 			= 'S';
+    SET pr_archivo_certificado  	= '34@CSD10_AAA010101AAA.cer';
+	SET pr_vigencia_desde   		= '';
+	SET pr_vigencia_hasta   		= '';
+	SET pr_avisame    				= 30;
+	SET pr_no_certificado   		= '30001000000300023701';
+	SET pr_archivo_llave  			= '34@CSD10_AAA010101AAA.key';
+	SET pr_contrasena   			= '12345678a';
+	SET pr_rfc_eventuales  			= 'XAXX010101000';
+	SET pr_rfc_extranjero   		= 'XEXX010101000';
+	SET pr_certificado  			= '-----BEGIN PUBLIC KEY-----
+ MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiJX7vpDun2LkGPgbVi5i
+ 4+1/9w793I1fX2jrLnsKIpyAZgSo+pvzxwn8g8/IU8gW0F3FgmaqKTEzDEMdMiyi
+ UjQYy+oQ7UGyiRwM4vhR8xm3s2ZhofU/w2P987nGfRvWpKdJ9AcZ08syBews+FpH
+ r0dESxUQijAQwzm5yg0CtI3N6XhclTxf92ei6Zm9o7IJ28QLTvo3MHdQkDndkPXG
+ +88R51R8B+PZ5pQJAlg+dOjJ/tMA4bPMaRfkQZyPELdh9xcbAbZ411tJvFKIAM/H
+ pAAKCyUK7W/OYLPBACZ94dZC+KullxwnIP/yyF3vPt+/kD8bSDdoOWgzkBfADecN
+ WwIDAQAB
+ -----END PUBLIC KEY-----
+ ';
+	SET pr_portal_timbrado_valida 	= 'N';
+	SET pr_portal_timbrado_usuario  = 'usrws_565';
+	SET pr_portal_timbrado_pwd  	= 'G!6j7Wkv#0!XX';
+	SET pr_archivo_pfx   			= '1@example.pfx';
+	SET pr_fecha_sello  			= '';
+	SET pr_folio_sat   				= '';
+
 	INSERT INTO  suite_mig_conf.st_adm_tr_config_cfdi(
 		id_grupo_empresa,
         id_pac,
