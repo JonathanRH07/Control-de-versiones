@@ -8,24 +8,24 @@ CREATE DEFINER=`root`@`%` PROCEDURE `sp_rep_distribucion_unidad_negocio_x_vended
     OUT	pr_message							VARCHAR(500)
 )
 BEGIN
-/*
+/* 	
     @nombre:		sp_rep_distribucion_unidad_negocio_x_vendedor_c
 	@fecha:			2020/01/16
 	@descripción : 	Sp para poblar el modal del reporte de distribucion de ventas --> UNIDAD DE NEGOCIO
 	@autor : 		Jonathan Ramirez Hernandez
-    @cambios :
+    @cambios : 		
 */
 
 	DECLARE lo_sucursal						TEXT DEFAULT '';
     DECLARE lo_moneda						TEXT;
 
-
+    
     /* VARIABLES DEL CURSOR */
 	DECLARE lo_id_unidad_negocio			INT;
     DECLARE lo_desc_unidad_negocio			VARCHAR(150);
     DECLARE lo_campo						LONGTEXT DEFAULT '';
     DECLARE fin 							INTEGER DEFAULT 0;
-
+    
     DECLARE cu_por_vendedor CURSOR FOR
 	SELECT
 		id_unidad_negocio,
@@ -33,37 +33,37 @@ BEGIN
 	FROM ic_cat_tc_unidad_negocio
 	WHERE id_grupo_empresa = pr_id_grupo_empresa
 	AND estatus_unidad_negocio = 1;
-
+    
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         SET pr_message = 'ERROR store sp_rep_distribucion_origen_venta_c';
 	END ;
-
-
-	DECLARE CONTINUE HANDLER FOR
+    
+    
+	DECLARE CONTINUE HANDLER FOR 
     NOT FOUND SET fin=1;
-
+    
     DROP TABLE IF EXISTS tmp;
     DROP TABLE IF EXISTS tmp1;
-
+    
     OPEN cu_por_vendedor;
-
+    
 		loop_obtUnidadNegocio: LOOP
-
+			
 			FETCH cu_por_vendedor INTO lo_id_unidad_negocio, lo_desc_unidad_negocio;
-
+            
 			IF fin = 1 THEN
 				LEAVE loop_obtUnidadNegocio;
 			END IF;
-
+			
 			SET lo_campo = CONCAT(lo_campo, '', lo_desc_unidad_negocio);
-
+            
 			SET @query = CONCAT('
 				CREATE TEMPORARY TABLE tmp
 				SELECT
 					',lo_campo,'
 					NOW() fecha');
-
+			
             SET @query2 = CONCAT('
 				CREATE TEMPORARY TABLE tmp1
 				SELECT
@@ -84,20 +84,20 @@ BEGIN
 				EXECUTE stmt;
 				DEALLOCATE PREPARE stmt;
 
-
+			
 		END LOOP loop_obtUnidadNegocio;
-
+		
 		-- SELECT @query;
 		PREPARE stmt FROM @query;
 		EXECUTE stmt;
 		DEALLOCATE PREPARE stmt;
-
-
+        
+    
     CLOSE cu_por_vendedor;
-
+    
 	# Mensaje de ejecución.
 	SET pr_message = 'SUCCESS';
-
+    
 	/* -------------------------------------------------------------------- */
 
 END$$
