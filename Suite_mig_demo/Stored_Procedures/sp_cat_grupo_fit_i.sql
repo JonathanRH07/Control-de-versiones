@@ -1,14 +1,15 @@
 DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_cat_grupo_fit_i`(
-	IN  pr_id_grupo_empresa     INT,
-    IN	pr_id_usuario			INT,
-	IN  pr_cve_codigo_grupo     VARCHAR(45),
-    IN  pr_desc_grupo_fit       VARCHAR(50),
-    IN  pr_fecha_inicio_grupo   DATE,
-    IN  pr_fecha_fin_grupo      DATE,
-    OUT pr_inserted_id			INT,
-    OUT pr_affect_rows	        INT,
-	OUT pr_message		        VARCHAR(500))
+	IN  pr_id_grupo_empresa     		INT,
+    IN	pr_id_usuario					INT,
+	IN  pr_cve_codigo_grupo     		VARCHAR(45),
+    IN  pr_desc_grupo_fit       		VARCHAR(50),
+    IN  pr_fecha_inicio_grupo   		DATE,
+    IN  pr_fecha_fin_grupo      		DATE,
+    IN	pr_observaciones_grupo_fit		TEXT,
+    OUT pr_inserted_id					INT,
+    OUT pr_affect_rows	        		INT,
+	OUT pr_message		        		VARCHAR(500))
 BEGIN
 /*
 	@nombre:		sp_cat_grupo_fit_c
@@ -46,23 +47,27 @@ BEGIN
     ELSE
 		#Dependiendo del parametro del grupo fit inserta un valor
 
-		INSERT INTO ic_fac_tc_grupo_fit (
+		INSERT INTO ic_fac_tc_grupo_fit
+        (
 			id_grupo_empresa,
 			id_usuario,
 			cve_codigo_grupo,
 			desc_grupo_fit,
 			fecha_ini_grupo_fit,
-			fecha_fin_grupo_fit
-			)
+			fecha_fin_grupo_fit,
+            observaciones_grupo_fit
+		)
 		VALUES
-			(
+		(
 			pr_id_grupo_empresa,
 			pr_id_usuario,
 			pr_cve_codigo_grupo,
 			pr_desc_grupo_fit,
 			pr_fecha_inicio_grupo,
-			pr_fecha_fin_grupo
-			);
+			pr_fecha_fin_grupo,
+            pr_observaciones_grupo_fit
+		);
+
 		#Devuelve el numero de registros insertados
 		SELECT
 			ROW_COUNT()

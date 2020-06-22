@@ -336,7 +336,8 @@ BEGIN
 						,' , fecha_mod = sysdate()
 					WHERE id_cliente = ?'
 	);
-	PREPARE stmt FROM @query;
+
+    PREPARE stmt FROM @query;
 	SET @id_cliente = pr_id_cliente;
     EXECUTE stmt USING @id_cliente;
 

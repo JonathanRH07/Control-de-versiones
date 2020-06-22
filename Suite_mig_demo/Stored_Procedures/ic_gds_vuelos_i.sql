@@ -2,7 +2,7 @@ DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `ic_gds_vuelos_i`(
 	IN  pr_id_boleto 				INT(11),
 	IN  pr_id_detalle_factura 		INT(11),
-	IN  pr_clave_linea_aerea 		CHAR(2),
+	IN  pr_clave_linea_aerea 		CHAR(3),
 	IN  pr_clave_confirmacion 		VARCHAR(20),
 	IN  pr_clave_pax 				VARCHAR(20),
 	IN  pr_tarifa_facturada 		DECIMAL(15,2),

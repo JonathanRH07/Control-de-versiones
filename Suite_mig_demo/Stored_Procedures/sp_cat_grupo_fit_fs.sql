@@ -90,6 +90,7 @@ BEGIN
 							grupo_f.fecha_ini_grupo_fit ,
 							grupo_f.fecha_fin_grupo_fit,
 							grupo_f.estatus_grupo_fit,
+                            grupo_f.observaciones_grupo_fit,
                             grupo_f.fecha_mod_grupo_fit fecha_mod,
 							concat(usuario.nombre_usuario," ",
 							usuario.paterno_usuario) usuario_mod

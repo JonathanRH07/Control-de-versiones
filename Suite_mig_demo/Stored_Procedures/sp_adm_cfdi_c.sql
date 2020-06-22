@@ -49,7 +49,8 @@ BEGIN
 		suite_mig_conf.cfdi.usuario_cancelacion,
 		suite_mig_conf.cfdi.password_cancelacion,
 		suite_mig_conf.conf_admin.logo_empresa,
-        suite_mig_conf.conf_admin.aviso_no_folios
+        suite_mig_conf.conf_admin.aviso_no_folios,
+        cfdi.validar_campos
 	FROM suite_mig_conf.st_adm_tr_config_cfdi cfdi
 	JOIN suite_mig_conf.st_adm_tr_grupo_empresa grupo_empresa
 		ON grupo_empresa.id_grupo_empresa = cfdi.id_grupo_empresa
@@ -63,11 +64,11 @@ BEGIN
 		ON dir.id_direccion = suc.id_direccion
 	LEFT JOIN suite_mig_conf.st_adm_tr_config_admin conf_admin
 		ON conf_admin.id_empresa = empresa.id_empresa
-	LEFT JOIN sat_regimen_fiscal sat
-	ON cfdi.regimen_fiscal_sat = sat.c_RegimenFiscal
+	LEFT JOIN sat_regimen_fiscal sat ON
+		cfdi.regimen_fiscal_sat = sat.c_RegimenFiscal
 	WHERE empresa.id_empresa = pr_id_empresa
 	AND grupo_empresa.id_grupo_empresa = pr_id_grupo_empresa
-	AND suc.id_sucursal = pr_id_sucursal;
+    AND suc.id_sucursal = pr_id_sucursal;
 
 	SET pr_message 	   = 'SUCCESS';
 END$$

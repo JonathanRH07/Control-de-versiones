@@ -59,6 +59,8 @@ BEGIN
     DECLARE lo_id_zona_horaria				INT;
     DECLARE lo_count_sucursales				INT;
     DECLARE lo_id_tipo_paquete				INT;
+    DECLARE lo_c_numero_folios				INT;
+    DECLARE lo_c_numero_usuarios			INT;
 
     /* CONSTANTES */
 	DECLARE lo_estatus						INT(1) DEFAULT 1;
@@ -162,9 +164,13 @@ BEGIN
 
     /* OBTENEMOS EL ID DEL PAQUETE CONTRATADO */
     SELECT
-		id_tipo_paquete
+		id_tipo_paquete,
+        numero_folios,
+        numero_usuarios
 	INTO
-		lo_id_tipo_paquete
+		lo_id_tipo_paquete,
+		lo_c_numero_folios,
+        lo_c_numero_usuarios
 	FROM suite_mig_conf.st_adm_tc_tipo_paquete
 	WHERE nombre = lo_paquete;
 
@@ -249,7 +255,7 @@ BEGIN
 		@id_base_datos
     FROM suite_mig_conf.st_adm_tc_base_datos
     WHERE nombre = pr_db_empresa_sistema;
-    # SELECT @id_base_datos;
+
 	# SE INSERTAN DATOS DE LA EMPRESA
     INSERT INTO suite_mig_conf.st_adm_tr_empresa
 	(
@@ -282,7 +288,7 @@ BEGIN
         email_empresa,
         telefono_empresa,
         lo_id_zona_horaria,
-        1,
+        lo_c_numero_usuarios,
         no_licencias_empresa,
         lo_id_tipo_paquete
 	FROM tmp_cat_tr_empresa
