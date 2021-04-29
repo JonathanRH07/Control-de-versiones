@@ -45,6 +45,8 @@ BEGIN
         bucle: LOOP
             FETCH usuarios INTO lo_id_usuario, lo_id_grupo_empresa;
 
+			SET lo_nombre_video = CONCAT('Nuevo video: ', pr_nombre_video);
+
             IF done != TRUE THEN
                 CALL sp_adm_notificaciones_i
                     (lo_id_grupo_empresa,
@@ -77,7 +79,7 @@ BEGIN
 	)
 	VALUES
 	(
-		lo_nombre_video,
+		pr_nombre_video,
         pr_enlace_video,
         pr_modulo,
         lo_fecha_publicion,

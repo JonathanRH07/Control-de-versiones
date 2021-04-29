@@ -18,6 +18,7 @@ BEGIN
 		grup_empresa.id_grupo_empresa,
 		empresa.id_empresa,
 		empresa.razon_social,
+        empresa.comercial_empresa,
 		paquete.id_tipo_paquete
 	FROM st_adm_tr_empresa empresa
 	JOIN st_adm_tr_grupo_empresa grup_empresa ON

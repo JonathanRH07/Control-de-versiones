@@ -53,6 +53,7 @@ BEGIN
 				em.telefono_empresa,
 				em.email_empresa,
 				em.comercial_empresa,
+                em.razon_social,
 				em.usuarios,
 				em.sucursales,
 				em.outsoursing,
@@ -123,7 +124,8 @@ BEGIN
                 cnf.forma_pago_folios,
 				cnf.fecha_mod fecha_mod,
 				concat(usuario.nombre_usuario," ",
-				usuario.paterno_usuario) usuario_mod
+				usuario.paterno_usuario) usuario_mod,
+                cnf.centro_costos_obli
 			FROM st_adm_tr_empresa AS em
 			JOIN st_adm_tc_direccion AS dir
 				ON em.id_direccion = dir.id_direccion

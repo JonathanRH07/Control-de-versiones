@@ -10,6 +10,10 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_config_emails_u`(
     IN  pr_email_cobranza_password 		VARCHAR(100),
     IN  pr_email_cobranza_host 			VARCHAR(100),
     IN  pr_email_cobranza_puerto 		VARCHAR(10),
+    IN  pr_email_cxp_usuario 			VARCHAR(100),
+    IN  pr_email_cxp_password 			VARCHAR(100),
+    IN  pr_email_cxp_host 				VARCHAR(100),
+    IN  pr_email_cxp_puerto 			VARCHAR(10),
     IN  pr_id_usuario 					VARCHAR(10),
     OUT pr_affect_rows      			INT,
 	OUT pr_message 	         			VARCHAR(500))
@@ -30,6 +34,10 @@ BEGIN
 	DECLARE lo_email_cobranza_password			VARCHAR(200) DEFAULT '';
     DECLARE lo_email_cobranza_host				VARCHAR(200) DEFAULT '';
 	DECLARE lo_email_cobranza_puerto			VARCHAR(200) DEFAULT '';
+    DECLARE lo_email_cxp_usuario				VARCHAR(200) DEFAULT '';
+	DECLARE lo_email_cxp_password				VARCHAR(200) DEFAULT '';
+    DECLARE lo_email_cxp_host					VARCHAR(200) DEFAULT '';
+	DECLARE lo_email_cxp_puerto					VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -70,6 +78,21 @@ BEGIN
 		SET lo_email_cobranza_puerto = CONCAT('email_cobranza_puerto =  "', pr_email_cobranza_puerto, '",');
 	END IF;
 
+    IF pr_email_cxp_usuario != '' THEN
+		SET lo_email_cxp_usuario = CONCAT('email_cxp_usuario =  "', pr_email_cxp_usuario, '",');
+	END IF;
+
+    IF pr_email_cxp_password != '' THEN
+		SET lo_email_cxp_password = CONCAT('email_cxp_password =  "', pr_email_cxp_password, '",');
+	END IF;
+
+    IF pr_email_cxp_host != '' THEN
+		SET lo_email_cxp_host = CONCAT('email_cxp_host =  "', pr_email_cxp_host, '",');
+	END IF;
+
+    IF pr_email_cxp_puerto != '' THEN
+		SET lo_email_cxp_puerto = CONCAT('email_cxp_puerto =  "', pr_email_cxp_puerto, '",');
+	END IF;
 
 	SET @query = CONCAT('UPDATE st_adm_tr_config_emails
 								SET ',
@@ -81,6 +104,10 @@ BEGIN
 								lo_email_cobranza_password,
                                 lo_email_cobranza_host,
                                 lo_email_cobranza_puerto,
+                                lo_email_cxp_usuario,
+								lo_email_cxp_password,
+                                lo_email_cxp_host,
+                                lo_email_cxp_puerto,
                                 ' id_usuario=',pr_id_usuario ,
 								' , fecha_mod  = sysdate()
 							WHERE id_config_emails = ?

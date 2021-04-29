@@ -272,6 +272,7 @@ BEGIN
 							ELSEIF lo_inicio_sesion = 1 THEN
 								/* DE LO CONTRARIO MANDA EL ERROR: 'El Usuario ya se encuentra conectado' */
 								SET lo_mensaje = '3';
+                                SET lo_id_usuario_primer = lo_id_usuario;
 							ELSE
 								/* SI ESTA FUERA DEL HORARIO SE MANDA MENSAJE DE ERROR 'usuario fuera de horario' */
 								SET lo_mensaje = '8';
@@ -343,6 +344,7 @@ BEGIN
 						ELSE
 							/* DE LO CONTRARIO MANDA EL ERROR: 'El Usuario ya se encuentra conectado' */
 							SET lo_mensaje = '3';
+                            SET lo_id_usuario_primer = lo_id_usuario;
 						END IF;
 					ELSE
 						/* EN CASO DE QUE TENGA RESTRINCION DE HORARIO SE VALIDA ESTE MISMO */
@@ -390,6 +392,7 @@ BEGIN
 						ELSEIF lo_inicio_sesion = 1 THEN
 							/* DE LO CONTRARIO MANDA EL ERROR: 'El Usuario ya se encuentra conectado' */
 							SET lo_mensaje = '3';
+                            SET lo_id_usuario_primer = lo_id_usuario;
 						ELSE
 							/* SI ESTA FUERA DEL HORARIO SE MANDA MENSAJE DE ERROR 'usuario fuera de horario' */
 							SET lo_mensaje = '8';

@@ -37,6 +37,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_config_admin_i`(
     IN  pr_id_usuario 				INT(11),
     IN  pr_logo_empresa				VARCHAR(500),
     IN  pr_aviso_no_folios			INT,
+    IN 	pr_centro_costos_obli		CHAR(1),
     -- IN  pr_forma_pago_folios		ENUM('CREDITO','PREPAGO'),
     OUT pr_inserted_id				INT,
     OUT pr_affect_rows      		INT,
@@ -95,7 +96,8 @@ BEGIN
 		calculo_markup,
         id_usuario,
         logo_empresa,
-        aviso_no_folios
+        aviso_no_folios,
+		centro_costos_obli
 		-- forma_pago_folios
 		)
 	VALUE
@@ -136,7 +138,8 @@ BEGIN
 		pr_calculo_markup,
         pr_id_usuario,
         pr_logo_empresa,
-		pr_aviso_no_folios
+		pr_aviso_no_folios,
+        pr_centro_costos_obli
 		-- pr_forma_pago_folios
 		);
 

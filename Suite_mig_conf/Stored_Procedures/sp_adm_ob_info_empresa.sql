@@ -25,6 +25,7 @@ BEGIN
         ,T2.id_tipo_paquete
 		,T3.cve_pais
         ,zon.zona_horaria
+        ,T4.logo_empresa
 	FROM st_adm_tr_grupo_empresa T1
 	INNER JOIN st_adm_tr_empresa T2
 		ON T1.id_empresa = T2.id_empresa
@@ -32,6 +33,8 @@ BEGIN
 		ON T2.id_direccion = T3.id_direccion
 	JOIN st_adm_tc_zona_horaria zon ON
 		 T2.id_zona_horaria = zon.id_zona_horaria
+	JOIN st_adm_tr_config_admin T4 ON
+		 T1.id_empresa = T4.id_empresa
 	WHERE
 		T1.id_grupo_empresa = pr_id_grupo_empresa
 	;
@@ -39,4 +42,3 @@ BEGIN
 	SET pr_message = 'SUCCESS';
 END$$
 DELIMITER ;
-d

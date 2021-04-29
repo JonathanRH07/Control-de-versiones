@@ -9,6 +9,10 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_config_emails_i`(
     IN  pr_email_cobranza_password 		VARCHAR(100),
     IN  pr_email_cobranza_host 			VARCHAR(100),
     IN  pr_email_cobranza_puerto 		VARCHAR(10),
+    IN  pr_email_cxp_usuario 			VARCHAR(100),
+    IN  pr_email_cxp_password 			VARCHAR(100),
+    IN  pr_email_cxp_host 				VARCHAR(100),
+    IN  pr_email_cxp_puerto 			VARCHAR(10),
     IN  pr_id_usuario					INT,
     OUT pr_inserted_id					INT,
     OUT pr_affect_rows      			INT,
@@ -39,6 +43,10 @@ BEGIN
         email_cobranza_password,
         email_cobranza_host,
         email_cobranza_puerto,
+        email_cxp_usuario,
+        email_cxp_password,
+        email_cxp_host,
+        email_cxp_puerto,
         id_usuario
 		)
 	VALUES
@@ -52,6 +60,10 @@ BEGIN
         pr_email_cobranza_password,
         pr_email_cobranza_host,
         pr_email_cobranza_puerto,
+        pr_email_cxp_usuario,
+        pr_email_cxp_password,
+        pr_email_cxp_host,
+        pr_email_cxp_puerto,
         pr_id_usuario
 		);
 

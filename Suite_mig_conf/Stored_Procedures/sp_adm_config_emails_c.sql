@@ -9,10 +9,10 @@ BEGIN
 	@descripcion : 	Sp de consulta configuracion de emails
 	@autor : 		Yazbek Kido
 */
-	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	/*DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         SET pr_message = 'ERROR store sp_adm_config_emails_c';
-	END ;
+	END ;*/
 
 	SELECT
 		st_adm_tr_config_emails.*,

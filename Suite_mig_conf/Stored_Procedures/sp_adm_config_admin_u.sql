@@ -39,6 +39,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_config_admin_u`(
 	IN  pr_id_usuario				INT(11),
     IN  pr_logo_empresa				VARCHAR(500),
 	IN	pr_aviso_no_folios			VARCHAR(20),
+    IN 	pr_centro_costos_obli		CHAR(1),
     -- IN  pr_forma_pago_folios		ENUM('CREDITO','PREPAGO'),
     OUT pr_affect_rows				INT,
 	OUT pr_message					VARCHAR(500))
@@ -89,6 +90,7 @@ BEGIN
 	DECLARE  lo_id_usuario				VARCHAR(1000) DEFAULT '';
     DECLARE  lo_logo_empresa			VARCHAR(1000) DEFAULT '';
 	DECLARE  lo_aviso_no_folios			VARCHAR(1000) DEFAULT '';
+    DECLARE  lo_centro_costos_obli 			VARCHAR(1000) DEFAULT '';
     -- DECLARE  lo_forma_pago_folios		VARCHAR(1000) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -258,6 +260,10 @@ BEGIN
 		SET lo_aviso_no_folios = CONCAT(' aviso_no_folios = ',pr_aviso_no_folios, ',');
     END IF;
 
+    IF pr_centro_costos_obli != '' THEN
+		SET lo_centro_costos_obli = CONCAT(' centro_costos_obli = ''',pr_centro_costos_obli, ''',');
+    END IF;
+
     /*
     IF pr_forma_pago_folios != '' THEN
 		SET lo_forma_pago_folios = CONCAT(' forma_pago_folios = ',pr_forma_pago_folios);
@@ -304,6 +310,7 @@ BEGIN
                             lo_calculo_markup,
                             lo_logo_empresa,
                             lo_aviso_no_folios,
+                            lo_centro_costos_obli,
                             -- lo_forma_pago_folios
 							' id_usuario=',pr_id_usuario,
 							' , fecha_mod  = sysdate()

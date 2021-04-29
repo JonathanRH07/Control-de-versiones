@@ -1,88 +1,115 @@
 DELIMITER $$
-CREATE DEFINER=`root`@`%` PROCEDURE `sp_adm_usuario_busqueda_correo_c`(
-	IN 	pr_correo						CHAR(50),
-    IN 	pr_usuario						VARCHAR(256),
-    OUT pr_message						VARCHAR(5000)
+CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_usuario_busqueda_glob`(
+	-- IN	pr_id_grupo_empresa			INT,
+    IN	pr_parametro				VARCHAR(500),
+    IN	pr_busqueda					VARCHAR(2000),
+	OUT pr_message					VARCHAR(5000)
 )
 BEGIN
 /*
-	@nombre:		sp_adm_usuario_busqueda_correo_c
-	@fecha:			18/07/2019
-	@descripcion:	SP para buscar correo y contraseña en la tabla usuarios
+	@nombre:		sp_adm_usuario_busqueda_glob
+	@fecha:			12/10/2018
+	@descripcion:	SP para buscar registros en qualquier campo por texto o carácter Alfanumérico
 	@autor:			Jonathan Ramirez
 	@cambios:
 */
 
-    DECLARE lo_id_usuario				INT DEFAULT '-1';
-    DECLARE lo_id_grupo_empresa			INT;
-    DECLARE lo_inicio_sesion			INT;
-    DECLARE lo_acceso_horario			INT;
-    DECLARE lo_estatus_usuario			INT;
-    DECLARE lo_hora_acceso_ini			TIME;
-	DECLARE lo_hora_acceso_fin			TIME;
+	DECLARE	lo_id_usuario			VARCHAR(2000) DEFAULT '';
+    DECLARE	lo_id_role				VARCHAR(2000) DEFAULT '';
+    DECLARE	lo_usuario				VARCHAR(2000) DEFAULT '';
+    DECLARE	lo_password_usuario		VARCHAR(2000) DEFAULT '';
+    DECLARE	lo_nombre_usuario		VARCHAR(2000) DEFAULT '';
+    DECLARE	lo_paterno_usuario		VARCHAR(2000) DEFAULT '';
+    DECLARE	lo_materno_usuario		VARCHAR(2000) DEFAULT '';
+    DECLARE	lo_estatus_usuario		VARCHAR(2000) DEFAULT '';
+    DECLARE	lo_correo				VARCHAR(2000) DEFAULT '';
+    DECLARE lo_count				INT(1) DEFAULT 1;
+
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
-        SET pr_message = 'ERROR store sp_adm_usuario_sucursal_b';
+        SET pr_message = 'ERROR store sp_adm_usuario_busqueda_glob';
 	END ;
 
-    /*
-    -1) NO ENCONTRADO
-    -2) TIENE SESION ACTIVA
-    -3) NO TIENE LICENCIA ACTIVA
-    -4) TIENE RESTRICCION DE HORARIO
-    */
 
-    /* VALIDAMOS QUE EXISTA USUARIO CON EL CORREO INGRESADO */
-    SELECT
-		id_usuario,
-        id_grupo_empresa,
-        inicio_sesion,
-        acceso_horario,
-        estatus_usuario,
-        hora_acceso_ini,
-        hora_acceso_fin
-	INTO
-		lo_id_usuario,
-        lo_id_grupo_empresa,
-        lo_inicio_sesion,
-        lo_acceso_horario,
-        lo_estatus_usuario,
-        lo_hora_acceso_ini,
-        lo_hora_acceso_fin
-	FROM st_adm_tr_usuario
-	WHERE correo = pr_correo
-	AND usuario = pr_usuario;
+    IF pr_parametro != '' AND pr_busqueda != '' THEN
+		SET lo_count = 0;
+	END IF;
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+    IF lo_count = 0 THEN
 
-    IF lo_id_usuario != '-1' THEN
-		IF lo_estatus_usuario != 3 THEN
-			IF lo_inicio_sesion = 0 THEN
-				IF lo_acceso_horario = 0 THEN
-					SET lo_id_usuario = lo_id_usuario;
-                ELSE
-					IF NOW() >= lo_hora_acceso_ini AND NOW() <= lo_hora_acceso_fin THEN
-						SET lo_id_usuario = lo_id_usuario;
-					ELSE
-						SET lo_id_usuario = '-4';
-                    END IF;
-                END IF;
-			ELSE
-				SET lo_id_usuario = '-2';
-            END IF;
-        ELSE
-			SET lo_id_usuario = '-3';
+		IF pr_parametro = 'id_usuario' THEN
+			SET lo_id_usuario = CONCAT(' id_usuario = ',pr_busqueda,' ');
+		END IF;
+
+        IF pr_parametro = 'usuario' THEN
+			SET lo_usuario = CONCAT(' usuario = "',pr_busqueda,'" ');
         END IF;
+
+        IF pr_parametro = 'id_role' THEN
+			SET lo_id_role = CONCAT(' id_role = "',pr_busqueda,'" ');
+        END IF;
+
+		IF pr_parametro = 'password_usuario' THEN
+			SET lo_password_usuario = CONCAT(' password_usuario = "',pr_busqueda,'" ');
+		END IF;
+
+		IF pr_parametro = 'nombre_usuario' THEN
+			SET lo_nombre_usuario = CONCAT(' nombre_usuario "',pr_busqueda,'" ');
+        END IF;
+
+		IF pr_parametro = 'paterno_usuario' THEN
+			SET lo_paterno_usuario = CONCAT(' paterno_usuario = "',pr_busqueda,'" ');
+		END IF;
+
+		IF pr_parametro = 'materno_usuario' THEN
+			SET lo_materno_usuario = CONCAT(' materno_usuario = "',pr_busqueda,'" ');
+		END IF;
+
+		IF pr_parametro = 'estatus_usuario' THEN
+			SET lo_estatus_usuario = CONCAT(' estatus_usuario = "',pr_busqueda,'" ');
+		END IF;
+
+		IF pr_parametro = 'correo' THEN
+			SET lo_correo = CONCAT(' correo = "',pr_busqueda,'" ');
+		END IF;
+
     END IF;
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+    SET @query = CONCAT('SELECT
+							id_usuario,
+							id_grupo_empresa,
+							id_role,
+							id_estilo_empresa,
+							id_idioma,
+							usuario,
+							password_usuario,
+							nombre_usuario,
+							paterno_usuario,
+							materno_usuario,
+							estatus_usuario,
+							registra_usuario,
+							fecha_registro_usuario,
+							correo,
+							id_usuario_mod
+						FROM suite_mig_conf.st_adm_tr_usuario
+						WHERE ',
+                        lo_id_usuario,
+                        lo_id_role,
+                        lo_usuario,
+                        lo_password_usuario,
+                        lo_nombre_usuario,
+                        lo_paterno_usuario,
+                        lo_materno_usuario,
+                        lo_estatus_usuario,
+                        lo_correo,';'
+                        );
 
-    SELECT lo_id_usuario id_usuario;
+	PREPARE stmt FROM @query;
+    EXECUTE stmt;
+	DEALLOCATE PREPARE stmt;
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-	# Mensaje de ejecucion.
-	SET pr_message = 'SUCCESS';
+	SET pr_message 			= 'SUCCESS';
+    SET lo_count = 1;
 END$$
 DELIMITER ;
