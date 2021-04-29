@@ -11,4 +11,4 @@ CREATE TABLE `st_adm_tc_accion_permiso` (
   CONSTRAINT `fk_id_controlador` FOREIGN KEY (`id_controlador`) REFERENCES `st_adm_tr_controlador_sistema` (`id_controlador`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_id_submodulo` FOREIGN KEY (`id_submodulo`) REFERENCES `st_adm_tr_submodulo` (`id_submodulo`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_id_tipo_permiso` FOREIGN KEY (`id_tipo_permiso`) REFERENCES `st_adm_tc_tipo_permiso` (`id_tipo_permiso`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=864 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=901 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

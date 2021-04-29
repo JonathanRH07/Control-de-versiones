@@ -13,4 +13,4 @@ CREATE TABLE `st_adm_tc_direccion` (
   `fecha_mod_direccion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_direccion`),
   KEY `idx_cve_pais` (`cve_pais`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

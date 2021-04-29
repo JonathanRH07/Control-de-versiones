@@ -9,10 +9,15 @@ CREATE TABLE `st_adm_tr_config_emails` (
   `email_cobranza_host` varchar(100) DEFAULT NULL,
   `email_cobranza_puerto` varchar(10) DEFAULT NULL,
   `email_cobranza_password` varchar(100) DEFAULT NULL,
+  `email_cxp_usuario` varchar(100) DEFAULT NULL,
+  `email_cxp_host` varchar(100) DEFAULT NULL,
+  `email_cxp_puerto` varchar(10) DEFAULT NULL,
+  `email_cxp_password` varchar(100) DEFAULT NULL,
+  `usa_cifrado_default` tinyint(1) DEFAULT '0',
   `fecha_mod` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `id_usuario` int(11) NOT NULL,
   PRIMARY KEY (`id_config_emails`),
   KEY `fk_grupo_empresa_config_emails_idx` (`id_grupo_empresa`),
   KEY `fk_usuario_config_emails_idx` (`id_usuario`),
   CONSTRAINT `fk_grupo_empresa_config_emails` FOREIGN KEY (`id_grupo_empresa`) REFERENCES `st_adm_tr_grupo_empresa` (`id_grupo_empresa`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=latin1;

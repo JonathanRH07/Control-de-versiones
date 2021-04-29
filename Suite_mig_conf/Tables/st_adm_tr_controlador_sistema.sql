@@ -5,4 +5,4 @@ CREATE TABLE `st_adm_tr_controlador_sistema` (
   PRIMARY KEY (`id_controlador`),
   KEY `id_sistema` (`id_sistema`) USING BTREE,
   CONSTRAINT `fk_sistema_controlador` FOREIGN KEY (`id_sistema`) REFERENCES `st_adm_tr_sistema` (`id_sistema`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

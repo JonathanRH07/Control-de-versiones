@@ -9,4 +9,4 @@ CREATE TABLE `st_adm_tc_notificaciones_trans` (
   KEY `fk_cat_notificaciones_trans_id_idioma` (`id_idioma`),
   CONSTRAINT `fk_cat_notificaciones_trans_id_idioma` FOREIGN KEY (`id_idioma`) REFERENCES `st_adm_tc_idioma` (`id_idioma`) ON UPDATE NO ACTION,
   CONSTRAINT `fk_cat_notificaciones_trans_id_notificaciones` FOREIGN KEY (`id_notificaciones`) REFERENCES `st_adm_tc_notificaciones` (`id_notificaciones`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=latin1;

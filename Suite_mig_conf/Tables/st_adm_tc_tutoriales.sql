@@ -7,4 +7,4 @@ CREATE TABLE `st_adm_tc_tutoriales` (
   `descripcion` longtext,
   `estatus` enum('ACTIVO','INACTIVO') NOT NULL,
   PRIMARY KEY (`id_tutorial`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;

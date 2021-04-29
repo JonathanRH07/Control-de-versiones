@@ -7,4 +7,4 @@ CREATE TABLE `st_adm_tr_usuario_sucursal` (
   PRIMARY KEY (`id_usuario_sucursal`),
   KEY `fk_st_adm_tr_usuario_sucursal_st_adm_tr_usuario1_idx` (`id_usuario`) USING BTREE,
   KEY `idx_id_sucursal` (`id_sucursal`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1182 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=1191 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;

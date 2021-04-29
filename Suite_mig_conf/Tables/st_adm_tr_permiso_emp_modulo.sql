@@ -9,4 +9,4 @@ CREATE TABLE `st_adm_tr_permiso_emp_modulo` (
   KEY `fk_st_adm_tr_permiso_emp_modulo_st_adm_tc_modulo1_idx` (`id_modulo`) USING BTREE,
   CONSTRAINT `fk_st_adm_tr_permiso_emp_modulo_st_adm_tc_modulo1` FOREIGN KEY (`id_modulo`) REFERENCES `st_adm_tc_modulo` (`id_modulo`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_st_adm_tr_permiso_emp_modulo_st_adm_tr_empresa1` FOREIGN KEY (`id_empresa`) REFERENCES `st_adm_tr_empresa` (`id_empresa`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=180 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=185 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;

@@ -8,4 +8,4 @@ CREATE TABLE `st_adm_tr_alertas_usuarios` (
   KEY `fk_usuario_receptor_idx` (`id_usuario`),
   KEY `fk_alerta_idx` (`id_alerta`),
   CONSTRAINT `fk_alerta` FOREIGN KEY (`id_alerta`) REFERENCES `st_adm_tr_alertas` (`id_alertas`) ON DELETE CASCADE ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=11483 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=11490 DEFAULT CHARSET=latin1;

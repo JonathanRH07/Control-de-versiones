@@ -38,10 +38,11 @@ CREATE TABLE `st_adm_tr_config_admin` (
   `aviso_no_folios` int(11) DEFAULT '0',
   `forma_pago_folios` enum('CREDITO','PREPAGO') DEFAULT 'PREPAGO',
   `credito_folios_estatus` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
+  `centro_costos_obli` char(1) DEFAULT 'N',
   `estatus` enum('ACTIVO','INACTIVO') CHARACTER SET latin1 DEFAULT 'ACTIVO',
   `fecha_mod` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `id_usuario` int(11) NOT NULL,
   PRIMARY KEY (`id_config_admin`),
   UNIQUE KEY `id_empresa_UNIQUE` (`id_empresa`) USING BTREE,
   KEY `fk_usuario_idx` (`id_usuario`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

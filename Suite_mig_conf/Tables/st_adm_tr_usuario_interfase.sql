@@ -12,4 +12,4 @@ CREATE TABLE `st_adm_tr_usuario_interfase` (
   KEY `idx_usuario` (`usuario`) USING BTREE,
   KEY `idx_clave` (`clave`) USING BTREE,
   CONSTRAINT `fk_grupo_empresa_interface` FOREIGN KEY (`id_grupo_empresa`) REFERENCES `st_adm_tr_grupo_empresa` (`id_grupo_empresa`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=407 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=410 DEFAULT CHARSET=latin1;

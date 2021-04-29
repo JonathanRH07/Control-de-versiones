@@ -35,4 +35,4 @@ CREATE TABLE `st_adm_tr_usuario` (
   CONSTRAINT `fk_usuario_estilo` FOREIGN KEY (`id_estilo_empresa`) REFERENCES `st_adm_tr_estilo_empresa` (`id_estilo_empresa`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `st_adm_tr_usuario_ibfk_1` FOREIGN KEY (`id_role`) REFERENCES `st_adm_tc_role` (`id_role`) ON UPDATE CASCADE,
   CONSTRAINT `st_adm_tr_usuario_ibfk_2` FOREIGN KEY (`id_grupo_empresa`) REFERENCES `st_adm_tr_grupo_empresa` (`id_grupo_empresa`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1511 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=1514 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

@@ -12,4 +12,4 @@ CREATE TABLE `st_adm_tr_alertas` (
   KEY `idx_id_usuario` (`id_usuario`) USING BTREE,
   CONSTRAINT `fk_grupo_empresa` FOREIGN KEY (`id_grupo_empresa`) REFERENCES `st_adm_tr_grupo_empresa` (`id_grupo_empresa`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `st_adm_tr_usuario` (`id_usuario`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=1109 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=1110 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
