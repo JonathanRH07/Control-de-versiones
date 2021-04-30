@@ -1,0 +1,20 @@
+CREATE TABLE `ic_gds_tr_provee_contable` (
+  `id_provee_contable` int(11) NOT NULL,
+  `id_sucursal` int(11) DEFAULT NULL,
+  `id_servicio` int(11) DEFAULT NULL,
+  `id_proveedor` int(11) DEFAULT NULL,
+  `num_cta_pasivo` varchar(20) DEFAULT NULL,
+  `cve_proveedor_contable` varchar(10) DEFAULT NULL,
+  `num_cta_contable` varchar(20) DEFAULT NULL,
+  `num_cta_resul` varchar(20) DEFAULT NULL,
+  `num_dias_cred` int(11) DEFAULT NULL,
+  `descuento` decimal(6,2) DEFAULT NULL,
+  `lin_com` decimal(6,2) DEFAULT NULL,
+  `iva_serv` decimal(6,2) DEFAULT NULL,
+  `iva_com` decimal(6,2) DEFAULT NULL,
+  `port_cant` char(1) DEFAULT NULL,
+  `num_cta_costos` varchar(20) DEFAULT NULL,
+  `id_stat` int(11) DEFAULT NULL,
+  `fecha_mod` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id_provee_contable`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

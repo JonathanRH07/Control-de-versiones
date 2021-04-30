@@ -1,0 +1,20 @@
+CREATE TABLE `ic_fac_tr_prove_servicio` (
+  `id_prove_servicio` int(11) NOT NULL AUTO_INCREMENT,
+  `id_proveedor` int(11) NOT NULL,
+  `id_servicio` int(11) NOT NULL,
+  `id_impuesto` int(11) DEFAULT NULL,
+  `id_aerolinea` int(11) DEFAULT NULL,
+  `comision` decimal(5,2) DEFAULT NULL,
+  `tipo_valor_comision` char(1) DEFAULT NULL,
+  `margen` decimal(5,2) DEFAULT NULL,
+  `tipo_valor_margen` char(1) DEFAULT NULL,
+  `fecha_mod` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `id_usuario` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id_prove_servicio`),
+  KEY `fk_ic_fac_tr_prove_servicio_ic_cat_tc_servicio1_idx` (`id_servicio`),
+  KEY `fk_proveedor_idx` (`id_proveedor`),
+  KEY `fk_prove_servicio_usuario_idx` (`id_usuario`),
+  CONSTRAINT `fk_prove_servicio_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `suite_mig_conf`.`st_adm_tr_usuario` (`id_usuario`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_proveedor` FOREIGN KEY (`id_proveedor`) REFERENCES `ic_cat_tr_proveedor` (`id_proveedor`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_servicio` FOREIGN KEY (`id_servicio`) REFERENCES `ic_cat_tc_servicio` (`id_servicio`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=567 DEFAULT CHARSET=utf8;

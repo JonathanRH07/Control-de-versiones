@@ -1,0 +1,9 @@
+CREATE TABLE `ic_gds_tr_cadenas` (
+  `id_gds_cadenas` int(11) NOT NULL AUTO_INCREMENT,
+  `id_grupo_empresa` int(11) DEFAULT NULL,
+  `cve_cadena` char(3) DEFAULT NULL,
+  `nombre` varchar(80) DEFAULT NULL,
+  PRIMARY KEY (`id_gds_cadenas`),
+  KEY `fk_cadenas_grupo_empresa_idx` (`id_grupo_empresa`),
+  CONSTRAINT `fk_cadenas_grupo_empresa` FOREIGN KEY (`id_grupo_empresa`) REFERENCES `suite_mig_conf`.`st_adm_tr_grupo_empresa` (`id_grupo_empresa`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=145 DEFAULT CHARSET=latin1;

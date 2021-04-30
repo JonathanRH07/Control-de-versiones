@@ -6,4 +6,4 @@ CREATE TABLE `ct_glob_tc_pac` (
   `estatus` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
   PRIMARY KEY (`id_pac`),
   KEY `idx_cve_pac` (`cve_pac`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;

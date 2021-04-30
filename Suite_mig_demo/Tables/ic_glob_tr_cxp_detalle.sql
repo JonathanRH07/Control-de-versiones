@@ -1,0 +1,23 @@
+CREATE TABLE `ic_glob_tr_cxp_detalle` (
+  `id_cxp_detalle` int(11) NOT NULL AUTO_INCREMENT,
+  `id_cxp` int(11) NOT NULL,
+  `id_pago_anticipo_proveedores` int(11) NOT NULL,
+  `id_moneda` int(11) NOT NULL,
+  `fecha` date NOT NULL,
+  `concepto` varchar(150) DEFAULT NULL,
+  `importe` decimal(15,2) DEFAULT NULL,
+  `importe_moneda_base` decimal(15,2) DEFAULT NULL,
+  `tipo_cambio` decimal(17,4) DEFAULT NULL,
+  `importe_usd` decimal(17,4) DEFAULT NULL,
+  `importe_eur` decimal(17,4) DEFAULT NULL,
+  `referencia_origen` varchar(50) DEFAULT NULL,
+  `estatus` enum('ACTIVO','INACTIVO') DEFAULT NULL,
+  `fecha_mod` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_cxp_detalle`),
+  KEY `fk_cxp_detalle_cxp_idx` (`id_cxp`),
+  KEY `fk_cxp_detalle_pago_anticipo_proveedores_idx` (`id_pago_anticipo_proveedores`),
+  KEY `fk_cxp´_detalle_moneda_idx` (`id_moneda`),
+  CONSTRAINT `fk_cxp_detalle_cxp_detalle` FOREIGN KEY (`id_cxp`) REFERENCES `ic_glob_tr_cxp` (`id_cxp`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cxp_detalle_moneda_detalle` FOREIGN KEY (`id_moneda`) REFERENCES `ct_glob_tc_moneda` (`id_moneda`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cxp_detalle_pago_anticipo_proveedores_detalle` FOREIGN KEY (`id_pago_anticipo_proveedores`) REFERENCES `ic_glob_tr_cxp_pago_anticipo_proveedores` (`id_pago_anticipo_proveedores`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=196 DEFAULT CHARSET=latin1;

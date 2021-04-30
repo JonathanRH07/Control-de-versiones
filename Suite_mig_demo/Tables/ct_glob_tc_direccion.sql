@@ -13,4 +13,4 @@ CREATE TABLE `ct_glob_tc_direccion` (
   `fecha_mod` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_direccion`),
   KEY `cve_pais` (`cve_pais`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=29674 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=29829 DEFAULT CHARSET=utf8;

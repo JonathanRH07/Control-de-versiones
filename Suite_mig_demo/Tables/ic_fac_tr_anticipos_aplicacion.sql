@@ -1,0 +1,22 @@
+CREATE TABLE `ic_fac_tr_anticipos_aplicacion` (
+  `id_anticipos_aplicacion` int(11) NOT NULL AUTO_INCREMENT,
+  `id_anticipos` int(11) NOT NULL,
+  `id_factura_aplicacion` int(11) DEFAULT NULL,
+  `importe_aplicado_mon_facturada` decimal(13,2) DEFAULT NULL,
+  `importe_aplicado_base` decimal(13,2) DEFAULT NULL,
+  `importe_aplicado_usd` decimal(13,2) DEFAULT NULL,
+  `importe_aplicado_eur` decimal(13,2) DEFAULT NULL,
+  `tipo_cambio` decimal(13,4) DEFAULT NULL,
+  `fecha` date DEFAULT NULL,
+  `id_moneda` int(11) DEFAULT NULL,
+  `estatus` enum('ACTIVO','CANCELADA') DEFAULT 'ACTIVO',
+  `id_usuario` int(11) NOT NULL,
+  `fecha_mod` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_anticipos_aplicacion`),
+  KEY `fk_anticipos_aplicacion_anticipos_idx` (`id_anticipos`),
+  KEY `fk_anticipos_moneda_idx` (`id_moneda`),
+  KEY `fk_anticipos_usuario_idx` (`id_usuario`),
+  CONSTRAINT `fk_anticipos_aplicacion_anticipos` FOREIGN KEY (`id_anticipos`) REFERENCES `ic_fac_tr_anticipos` (`id_anticipos`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_anticipos_moneda` FOREIGN KEY (`id_moneda`) REFERENCES `ct_glob_tc_moneda` (`id_moneda`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_anticipos_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `suite_mig_conf`.`st_adm_tr_usuario` (`id_usuario`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=187 DEFAULT CHARSET=latin1;

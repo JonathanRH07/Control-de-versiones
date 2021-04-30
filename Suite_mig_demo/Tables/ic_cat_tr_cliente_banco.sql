@@ -1,0 +1,23 @@
+CREATE TABLE `ic_cat_tr_cliente_banco` (
+  `id_cliente_banco` int(11) NOT NULL AUTO_INCREMENT,
+  `id_grupo_empresa` int(11) DEFAULT NULL,
+  `id_cliente` int(11) DEFAULT NULL,
+  `id_forma_pago` int(11) DEFAULT NULL,
+  `id_sat_bancos` int(11) DEFAULT NULL,
+  `razon_social` varchar(100) NOT NULL DEFAULT 'NOT NULL',
+  `rfc` char(20) DEFAULT NULL,
+  `cuenta` char(20) DEFAULT NULL,
+  `estatus` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
+  `fecha_mod` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `id_usuario` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id_cliente_banco`),
+  KEY `fk_bancos_SAT_idx` (`id_sat_bancos`),
+  KEY `fk_cliente_banco_grupo_empr_idx` (`id_grupo_empresa`),
+  KEY `fk_cliente_banco_cliente_idx` (`id_cliente`),
+  KEY `idx_razon_social` (`razon_social`),
+  KEY `fk_cliente_banco_usuario_idx` (`id_usuario`),
+  CONSTRAINT `fk_bancos_SAT` FOREIGN KEY (`id_sat_bancos`) REFERENCES `sat_bancos` (`id_sat_bancos`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cliente_banco_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `ic_cat_tr_cliente` (`id_cliente`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cliente_banco_grupo_empr` FOREIGN KEY (`id_grupo_empresa`) REFERENCES `suite_mig_conf`.`st_adm_tr_grupo_empresa` (`id_grupo_empresa`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_cliente_banco_usuario` FOREIGN KEY (`id_usuario`) REFERENCES `suite_mig_conf`.`st_adm_tr_usuario` (`id_usuario`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=547 DEFAULT CHARSET=latin1;

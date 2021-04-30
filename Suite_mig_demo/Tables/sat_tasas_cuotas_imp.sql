@@ -1,0 +1,9 @@
+CREATE TABLE `sat_tasas_cuotas_imp` (
+  `rango_fijo` varchar(10) DEFAULT NULL,
+  `c_TasaOCuota_min` varchar(50) DEFAULT NULL,
+  `c_TasaOCuota_max` varchar(50) DEFAULT NULL,
+  `impuesto` varchar(30) DEFAULT NULL,
+  `factor` varchar(10) DEFAULT NULL,
+  `traslado` varchar(10) DEFAULT NULL,
+  `retencion` varchar(10) DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
