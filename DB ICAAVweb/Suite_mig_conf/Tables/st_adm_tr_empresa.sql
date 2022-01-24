@@ -30,4 +30,4 @@ CREATE TABLE `st_adm_tr_empresa` (
   CONSTRAINT `fk_st_adm_tr_empresa_idioma` FOREIGN KEY (`id_idioma`) REFERENCES `st_adm_tc_idioma` (`id_idioma`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_st_adm_tr_empresa_st_adm_tc_direccion` FOREIGN KEY (`id_direccion`) REFERENCES `st_adm_tc_direccion` (`id_direccion`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_st_adm_tr_empresa_st_adm_tc_tipo_paquete` FOREIGN KEY (`id_tipo_paquete`) REFERENCES `st_adm_tc_tipo_paquete` (`id_tipo_paquete`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

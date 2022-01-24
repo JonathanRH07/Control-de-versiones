@@ -14,6 +14,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_config_emails_u`(
     IN  pr_email_cxp_password 			VARCHAR(100),
     IN  pr_email_cxp_host 				VARCHAR(100),
     IN  pr_email_cxp_puerto 			VARCHAR(10),
+    IN	pr_ambiente_pruebas				CHAR(1),
     IN  pr_id_usuario 					VARCHAR(10),
     OUT pr_affect_rows      			INT,
 	OUT pr_message 	         			VARCHAR(500))
@@ -38,6 +39,7 @@ BEGIN
 	DECLARE lo_email_cxp_password				VARCHAR(200) DEFAULT '';
     DECLARE lo_email_cxp_host					VARCHAR(200) DEFAULT '';
 	DECLARE lo_email_cxp_puerto					VARCHAR(200) DEFAULT '';
+    DECLARE lo_ambiente_pruebas					VARCHAR(200) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -94,6 +96,10 @@ BEGIN
 		SET lo_email_cxp_puerto = CONCAT('email_cxp_puerto =  "', pr_email_cxp_puerto, '",');
 	END IF;
 
+    IF pr_ambiente_pruebas != '' THEN
+		SET lo_ambiente_pruebas = CONCAT('ambiente_pruebas = ''',pr_ambiente_pruebas,''',');
+    END IF;
+
 	SET @query = CONCAT('UPDATE st_adm_tr_config_emails
 								SET ',
 								lo_email_facturacion_usuario,
@@ -108,17 +114,17 @@ BEGIN
 								lo_email_cxp_password,
                                 lo_email_cxp_host,
                                 lo_email_cxp_puerto,
+                                lo_ambiente_pruebas,
                                 ' id_usuario=',pr_id_usuario ,
 								' , fecha_mod  = sysdate()
 							WHERE id_config_emails = ?
                             AND
                             id_grupo_empresa=',pr_id_grupo_empresa,'');
 
-	PREPARE stmt
-	FROM @query;
-
+	PREPARE stmt FROM @query;
 	SET @id_config_emails = pr_id_config_emails;
 	EXECUTE stmt USING @id_config_emails;
+
 	#Devuelve el numero de registros afectados
 	SELECT
 		ROW_COUNT()

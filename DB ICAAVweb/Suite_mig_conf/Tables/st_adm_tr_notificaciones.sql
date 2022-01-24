@@ -14,4 +14,4 @@ CREATE TABLE `st_adm_tr_notificaciones` (
   KEY `fk_notificaciones_id_tipo_notificacion` (`id_tipo_notificacion`),
   CONSTRAINT `fk_notificaciones_id_grupo_empresa` FOREIGN KEY (`id_grupo_empresa`) REFERENCES `st_adm_tr_grupo_empresa` (`id_grupo_empresa`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_notificaciones_id_tipo_notificacion` FOREIGN KEY (`id_tipo_notificacion`) REFERENCES `st_adm_tc_tipo_notificacion` (`id_tipo_notificacion`) ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3412 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=107 DEFAULT CHARSET=latin1;

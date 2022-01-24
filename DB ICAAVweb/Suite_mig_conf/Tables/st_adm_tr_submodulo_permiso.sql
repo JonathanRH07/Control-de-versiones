@@ -7,4 +7,4 @@ CREATE TABLE `st_adm_tr_submodulo_permiso` (
   KEY `idx_permiso_sub_idx` (`id_tipo_permiso`) USING BTREE,
   CONSTRAINT `idx_permiso_sub` FOREIGN KEY (`id_tipo_permiso`) REFERENCES `st_adm_tc_tipo_permiso` (`id_tipo_permiso`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `idx_submodulo_per` FOREIGN KEY (`id_submodulo`) REFERENCES `st_adm_tr_submodulo` (`id_submodulo`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=194 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=198 DEFAULT CHARSET=latin1 ROW_FORMAT=COMPACT;

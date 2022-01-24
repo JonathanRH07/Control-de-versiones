@@ -1,6 +1,7 @@
 DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_usuario_session_c`(
     IN  pr_id_usuario					INT,
+    IN pr_sessiond_id					VARCHAR(500),
     OUT pr_message 	         			VARCHAR(500))
 BEGIN
 /*
@@ -11,13 +12,18 @@ BEGIN
 	@cambios:
 
 */
+
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 
 	BEGIN
 		SET pr_message = 'ERROR store sp_adm_usuario_session_c';
 	END;
 
-	SELECT * FROM st_adm_tr_usuario_sesion WHERE id_usuario = pr_id_usuario order by fecha_mod DESC;
+    IF pr_sessiond_id != '' THEN
+		SELECT * FROM st_adm_tr_usuario_sesion WHERE session_id = pr_sessiond_id order by fecha_mod DESC;
+	ELSE
+		SELECT * FROM st_adm_tr_usuario_sesion WHERE id_usuario = pr_id_usuario order by fecha_mod DESC;
+	END IF;
 
 
 	 # Mensaje de ejecución.

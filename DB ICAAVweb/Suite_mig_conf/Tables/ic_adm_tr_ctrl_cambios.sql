@@ -11,4 +11,4 @@ CREATE TABLE `ic_adm_tr_ctrl_cambios` (
   KEY `idx_usuario` (`id_usuario`) USING BTREE,
   KEY `fk_catalogos_ctrl_idx` (`id_ctrl_cambios_cat`) USING BTREE,
   KEY `fk_ctrl_cambios_usuario_idx` (`id_usuario`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=20617 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=21268 DEFAULT CHARSET=utf8;

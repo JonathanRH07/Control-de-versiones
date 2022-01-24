@@ -9,4 +9,4 @@ CREATE TABLE `st_adm_tr_submodulo` (
   KEY `idx_id_modulo` (`id_modulo`) USING BTREE,
   KEY `fk_id_default_controller_idx` (`id_default_api_controller`),
   CONSTRAINT `fk_submodulo_modulo` FOREIGN KEY (`id_modulo`) REFERENCES `st_adm_tc_modulo` (`id_modulo`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

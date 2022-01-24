@@ -13,4 +13,4 @@ CREATE TABLE `st_adm_tr_config_moneda` (
   KEY `idx_moneda` (`id_moneda`) USING BTREE,
   KEY `fk_usuario_moneda_idx` (`id_usuario`) USING BTREE,
   CONSTRAINT `fk_grupo_empresa_moneda` FOREIGN KEY (`id_grupo_empresa`) REFERENCES `st_adm_tr_grupo_empresa` (`id_grupo_empresa`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=287 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=309 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

@@ -2,7 +2,7 @@ DELIMITER $$
 CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_usuario_session_u`(
     IN  pr_id_usuario					INT,
     IN  pr_session_id					VARCHAR(60),
-    IN  pr_timestamp					VARCHAR(60),
+    IN  pr_datos_session				json,
     OUT pr_affect_rows      			INT,
     OUT pr_message 	         			VARCHAR(500))
 BEGIN
@@ -13,7 +13,9 @@ BEGIN
 	@autor: 		Yazbek Kido
 	@cambios:
 
+
 */
+
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 
 	BEGIN
@@ -21,7 +23,8 @@ BEGIN
         SET pr_affect_rows = 0;
 	END;
 
-	SET @query = CONCAT('UPDATE st_adm_tr_usuario_sesion SET fecha_mod = "',pr_timestamp,'" WHERE id_usuario = ? AND session_id="',pr_session_id,'" ');
+	-- SET @query = CONCAT('UPDATE st_adm_tr_usuario_sesion SET fecha_mod = "',pr_timestamp,'" WHERE id_usuario = ? AND session_id="',pr_session_id,'" ');
+    SET @query = CONCAT('UPDATE st_adm_tr_usuario_sesion SET datos_session = ''',pr_datos_session,''' WHERE id_usuario = ? AND session_id="',pr_session_id,'" ');
 
 	PREPARE stmt
 	FROM @query;

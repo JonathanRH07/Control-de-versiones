@@ -10,4 +10,4 @@ CREATE TABLE `st_adm_tr_grupo_empresa` (
   KEY `fk_st_adm_tr_grupo_empresa_st_adm_tr_grupo_idx` (`id_grupo`) USING BTREE,
   CONSTRAINT `st_adm_tr_grupo_empresa_ibfk_1` FOREIGN KEY (`id_empresa`) REFERENCES `st_adm_tr_empresa` (`id_empresa`) ON UPDATE CASCADE,
   CONSTRAINT `st_adm_tr_grupo_empresa_ibfk_2` FOREIGN KEY (`id_grupo`) REFERENCES `st_adm_tr_grupo` (`id_grupo`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

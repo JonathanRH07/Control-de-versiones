@@ -94,11 +94,11 @@ BEGIN
     -- DECLARE  lo_forma_pago_folios		VARCHAR(1000) DEFAULT '';
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
-
+/*
 	BEGIN
 		SET pr_message = 'ERROR store sp_adm_config_admin_u';
 		SET pr_affect_rows = 0;
-	END;
+	END;*/
 
 	IF pr_id_config_admin > 0  THEN
 		SET lo_id_config_admin = CONCAT(' id_empresa= "', pr_id_config_admin, '",');

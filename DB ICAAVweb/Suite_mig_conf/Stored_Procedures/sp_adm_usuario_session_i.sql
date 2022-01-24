@@ -21,6 +21,10 @@ BEGIN
         SET pr_affect_rows = 0;
 	END;
 
+    DELETE FROM st_adm_tr_usuario_sesion
+    WHERE id_usuario = pr_id_usuario;
+
+
 	INSERT INTO  suite_mig_conf.st_adm_tr_usuario_sesion(
 		id_usuario,
         session_id

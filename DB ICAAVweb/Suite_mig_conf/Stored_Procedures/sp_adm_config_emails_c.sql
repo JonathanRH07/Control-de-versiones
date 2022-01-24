@@ -18,8 +18,8 @@ BEGIN
 		st_adm_tr_config_emails.*,
         emp.comercial_empresa,
         st_adm_tr_config_emails.fecha_mod fecha_mod,
-			concat(usuario.nombre_usuario," ",
-			usuario.paterno_usuario) usuario_mod
+		concat(usuario.nombre_usuario," ",
+		usuario.paterno_usuario) usuario_mod
 	FROM st_adm_tr_config_emails
     INNER JOIN suite_mig_conf.st_adm_tr_usuario usuario
 		ON usuario.id_usuario=st_adm_tr_config_emails.id_usuario

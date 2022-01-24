@@ -12,4 +12,4 @@ CREATE TABLE `st_adm_tr_permiso_role` (
   CONSTRAINT `fk_permiso_role` FOREIGN KEY (`id_role`) REFERENCES `st_adm_tc_role` (`id_role`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_permiso_role_tipo` FOREIGN KEY (`id_tipo_permiso`) REFERENCES `st_adm_tc_tipo_permiso` (`id_tipo_permiso`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_permiso_submodulo` FOREIGN KEY (`id_submodulo`) REFERENCES `st_adm_tr_submodulo` (`id_submodulo`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=24342 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=24516 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;

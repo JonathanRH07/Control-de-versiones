@@ -4,4 +4,4 @@ CREATE TABLE `ic_adm_tc_catalogo` (
   `nombre_catalogo` char(50) DEFAULT NULL,
   PRIMARY KEY (`id_catalogo`),
   KEY `idx_clave` (`clave`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;

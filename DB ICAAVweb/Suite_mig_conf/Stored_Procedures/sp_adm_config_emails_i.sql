@@ -13,6 +13,7 @@ CREATE DEFINER=`suite_deve`@`%` PROCEDURE `sp_adm_config_emails_i`(
     IN  pr_email_cxp_password 			VARCHAR(100),
     IN  pr_email_cxp_host 				VARCHAR(100),
     IN  pr_email_cxp_puerto 			VARCHAR(10),
+    IN	pr_ambiente_pruebas				CHAR(1),
     IN  pr_id_usuario					INT,
     OUT pr_inserted_id					INT,
     OUT pr_affect_rows      			INT,
@@ -47,6 +48,7 @@ BEGIN
         email_cxp_password,
         email_cxp_host,
         email_cxp_puerto,
+        ambiente_pruebas,
         id_usuario
 		)
 	VALUES
@@ -64,6 +66,7 @@ BEGIN
         pr_email_cxp_password,
         pr_email_cxp_host,
         pr_email_cxp_puerto,
+        pr_ambiente_pruebas,
         pr_id_usuario
 		);
 

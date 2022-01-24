@@ -100,9 +100,9 @@ BEGIN
 			DELETE FROM ',@lo_base_datos,'ic_rep_tr_acumulado_tipo_proveedor WHERE id_grupo_empresa = ',pr_id_grupo_empresa,';
 			DELETE FROM ',@lo_base_datos,'ic_rep_tr_acumulado_vendedor WHERE id_grupo_empresa = ',pr_id_grupo_empresa,';');
 
-	SELECT @query2;
+	-- SELECT @query2;
 	PREPARE stmt FROM @query;
-	EXECUTE stmt;
+	-- EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
 
 

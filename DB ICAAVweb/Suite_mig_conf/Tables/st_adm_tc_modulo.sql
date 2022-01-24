@@ -8,4 +8,4 @@ CREATE TABLE `st_adm_tc_modulo` (
   KEY `fk_st_adm_tc_modulo_id_tipo_paquete_idx` (`id_tipo_paquete`),
   CONSTRAINT `fk_id_sistema` FOREIGN KEY (`id_sistema`) REFERENCES `st_adm_tr_sistema` (`id_sistema`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_st_adm_tc_modulo_id_tipo_paquete` FOREIGN KEY (`id_tipo_paquete`) REFERENCES `st_adm_tc_tipo_paquete` (`id_tipo_paquete`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
